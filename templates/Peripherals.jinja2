@@ -1,0 +1,20 @@
+#include <Register.hpp>
+
+{% set peripheral_name = peripheral.name.upper() %}
+{% set struct_type = peripheral.name.lower() + "_t" %}
+
+namespace {{ peripheral_name }}
+{
+    struct {{ struct_type }}{};
+
+    constexpr std::uint32_t {{ peripheral_name }}_BASE_ADDRESS = {{ peripheral.base_address }}u;
+{% for reg in peripheral.registers -%}
+{%- for field in reg.fields %}
+    constexpr auto {% if field.name == reg.name %}{{ field.name }}_{% else %}{{ field.name }}{% endif %} = BitField<{{ struct_type }}, {{ field.bit_offset }}, {{ field.bit_width }}{% if field.access %}, {{ field.access.upper() | replace("-", "") }}{% endif %}>{}; // bit offset: {{ field.bit_offset }}, bit width: {{ field.bit_width }}, {{ field.description }}
+{%- endfor %}
+    static Register<std::uint{{ reg.size }}_t, {{ peripheral_name }}_BASE_ADDRESS + {{ reg.address_offset }}u, {{ reg.reset_value }}{% if reg.access %}, {{ reg.access.upper() | replace("-", "") }}{% else %}, READWRITE{% endif %}
+    {%- for field in reg.fields -%}
+    , decltype({% if field.name == reg.name %}{{ field.name }}_{% else %}{{ field.name }}{% endif %})
+    {%- endfor %}> {{ reg.name.upper() }}; // {{ reg.description }}
+{% endfor %}
+} // namespace {{ peripheral_name }}

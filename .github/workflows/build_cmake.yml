@@ -40,7 +40,7 @@ jobs:
     - name: Install conan
       shell: bash
       run: |
-        python3 -m pip install --upgrade pip setuptools
+        python3 -m pip install --upgrade pip setuptools jinja2
         python3 -m pip install conan
         source ~/.profile
 

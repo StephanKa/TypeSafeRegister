@@ -1,0 +1,42 @@
+import re
+import json
+import os
+
+import sys
+from cmsis_svd.parser import SVDParser
+from jinja2 import Environment, FileSystemLoader
+
+
+if __name__ == '__main__':
+    file_loader = FileSystemLoader('{0}/../templates'.format(sys.argv[1]))
+    env = Environment(loader=file_loader)
+    parser = SVDParser.for_packaged_svd('STMicro', 'STM32F20x.svd')
+    svd_dict = parser.get_device().to_dict()
+    f = open("test.json", "w")
+    f.write(json.dumps(svd_dict, sort_keys=True, indent=4, separators=(',', ': ')))
+    f.close()
+
+    peripherals = parser.get_device().peripherals
+    peripherals = sorted(peripherals, key=lambda x: x.base_address)
+    for peripheral in peripherals:
+        s = ""
+        peripheral.base_address = "0x%08x" % peripheral.base_address
+        for reg in peripheral.registers:
+            reg.fields = sorted(reg.fields, key=lambda x: x.bit_offset)
+            reg.description = re.sub(" +", " ", reg.description.replace("\n", ""))
+            if not isinstance(reg.address_offset, str):
+                reg.address_offset = "0x%08x" % reg.address_offset
+            else:
+                reg.address_offset = reg.address_offset
+            for field in reg.fields:
+                field.description = re.sub(" +", " ", field.description.replace("\n", ""))
+
+    template = env.get_template('Peripherals.jinja2')
+    if not os.path.exists("{0}/generated".format(sys.argv[1])):
+        os.mkdir("{0}/generated".format(sys.argv[1]))
+    for peripheral in peripherals:
+        output = template.render(peripheral=peripheral)
+        f = open("{0}/generated/{1}.hpp".format(sys.argv[1], peripheral.name.upper()), "w")
+        f.write(output)
+        f.close()
+

@@ -1,29 +1,27 @@
-macro(run_conan)
-  # Download automatically, you can also just copy the conan.cmake file
-  if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
-    message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
-    file(DOWNLOAD "https://github.com/conan-io/cmake-conan/raw/v0.15/conan.cmake" "${CMAKE_BINARY_DIR}/conan.cmake")
-  endif()
+MACRO(RUN_CONAN)
+    # Download automatically, you can also just copy the conan.cmake file
+    IF(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
+        MESSAGE(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
+        FILE(DOWNLOAD "https://github.com/conan-io/cmake-conan/raw/v0.16/conan.cmake" "${CMAKE_BINARY_DIR}/conan.cmake")
+    ENDIF()
 
-  include(${CMAKE_BINARY_DIR}/conan.cmake)
+    INCLUDE(${CMAKE_BINARY_DIR}/conan.cmake)
 
-  conan_add_remote(
-    NAME
-    bincrafters
-    URL
-    https://api.bintray.com/conan/bincrafters/public-conan)
+    CONAN_ADD_REMOTE(NAME center
+                     INDEX 1
+                     URL https://center.conan.io
+                     VERIFY_SSL True)
 
-  conan_cmake_run(
-    REQUIRES
-    ${CONAN_EXTRA_REQUIRES}
-    catch2/2.13.3
-    docopt.cpp/0.6.2
-    fmt/6.2.0
-    spdlog/1.5.0
-    OPTIONS
-    ${CONAN_EXTRA_OPTIONS}
-    BASIC_SETUP
-    CMAKE_TARGETS # individual targets to link to
-    BUILD
-    missing)
-endmacro()
+    CONAN_CMAKE_RUN(
+            REQUIRES
+            ${CONAN_EXTRA_REQUIRES}
+            catch2/2.13.7
+            fmt/8.0.1
+            spdlog/1.9.1
+            OPTIONS
+            ${CONAN_EXTRA_OPTIONS}
+            BASIC_SETUP
+            CMAKE_TARGETS # individual targets to link to
+            BUILD
+            missing)
+ENDMACRO()
