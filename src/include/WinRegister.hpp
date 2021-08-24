@@ -19,10 +19,10 @@ concept ReadConcept = std::is_same_v<T, READWRITE> || std::is_same_v<T, READONLY
 template<typename T, typename U>
 concept NotSameType = !std::is_same_v<T, U>;
 
-template<typename Type> constexpr auto getMask(size_t bitOffset, size_t bitWidth)
+template<typename Type> constexpr auto getMask(std::size_t bitOffset, std::size_t bitWidth)
 {
     Type mask = 0u;
-    for (size_t i = 0; i < bitWidth; i++)
+    for (std::size_t i = 0; i < bitWidth; i++)
     {
         mask |= 1 << (bitOffset + i);
     }
@@ -38,10 +38,10 @@ requires NotSameType<T, U>
 consteval std::uint32_t operator&(T rhs, T lhs) { return rhs.mask & lhs.mask; }
 
 // for embedded access
-template<typename T, size_t BitOffset, size_t BitWidth, typename FieldType = READWRITE> struct BitField
+template<typename T, std::size_t BitOffset, std::size_t BitWidth, typename FieldType = READWRITE> struct BitField
 {
-    static constexpr size_t bitOffset = BitOffset;
-    static constexpr size_t bitWidth = BitWidth;
+    static constexpr std::size_t bitOffset = BitOffset;
+    static constexpr std::size_t bitWidth = BitWidth;
     static constexpr std::uint32_t mask = getMask<std::uint32_t>(BitOffset, BitWidth);
     constexpr static FieldType Type{};
 };
