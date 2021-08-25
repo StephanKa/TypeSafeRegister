@@ -1,8 +1,8 @@
 #pragma once
 #include <cstdint>
+#include <limits>
 #include <tuple>
 #include <type_traits>
-#include <limits>
 
 class READONLY
 {};
@@ -10,15 +10,6 @@ class WRITEONLY
 {};
 class READWRITE : public READONLY, public WRITEONLY
 {};
-
-template<typename T>
-concept WriteConcept = std::is_same_v<T, READWRITE> || std::is_same_v<T, WRITEONLY>;
-
-template<typename T>
-concept ReadConcept = std::is_same_v<T, READWRITE> || std::is_same_v<T, READONLY>;
-
-template<typename T, typename U>
-concept NotSameType = !std::is_same_v<T, U>;
 
 template<typename Type> constexpr auto getMask(std::size_t bitOffset, std::size_t bitWidth)
 {
@@ -30,14 +21,6 @@ template<typename Type> constexpr auto getMask(std::size_t bitOffset, std::size_
     return mask;
 }
 
-template<typename T, typename U>
-requires NotSameType<T, U>
-consteval std::uint32_t operator|(T rhs, U lhs) { return rhs.mask | lhs.mask; }
-
-template<typename T, typename U>
-requires NotSameType<T, U>
-consteval std::uint32_t operator&(T rhs, T lhs) { return rhs.mask & lhs.mask; }
-
 // for embedded access
 template<typename T, std::size_t BitOffset, std::size_t BitWidth, typename FieldType = READWRITE> struct BitField
 {
@@ -46,6 +29,23 @@ template<typename T, std::size_t BitOffset, std::size_t BitWidth, typename Field
     static constexpr std::uint32_t mask = getMask<std::uint32_t>(BitOffset, BitWidth);
     constexpr static FieldType Type{};
 };
+
+template<typename T>
+concept WriteConcept = std::is_same_v<T, READWRITE> || std::is_same_v<T, WRITEONLY>;
+
+template<typename T>
+concept ReadConcept = std::is_same_v<T, READWRITE> || std::is_same_v<T, READONLY>;
+
+template<typename T, typename U>
+concept NotSameType = !std::is_same_v<T, U> && std::is_class_v<T> && std::is_class_v<U>;
+
+template<typename T, typename U>
+requires NotSameType<T, U>
+consteval std::uint32_t operator|(T rhs, U lhs) { return rhs.mask | lhs.mask; }
+
+template<typename T, typename U>
+requires NotSameType<T, U>
+consteval std::uint32_t operator&(T rhs, T lhs) { return rhs.mask & lhs.mask; }
 
 // dummy for non embedded access
 template<typename RegisterWidth, std::uint32_t RegisterAddress, RegisterWidth ResetValue, typename RegisterType, typename... Fields> class Register
