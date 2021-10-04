@@ -1,8 +1,8 @@
 #pragma once
 #include <cstdint>
-#include <tuple>
-#include <type_traits>
 #include <limits>
+#include <map>
+#include <type_traits>
 
 class READONLY
 {};
@@ -30,25 +30,37 @@ template<typename Type> consteval auto getMask(std::size_t bitOffset, std::size_
     return mask;
 }
 
-template<typename T, typename U>
-requires NotSameType<T, U>
-consteval std::uint32_t operator|(T rhs, U lhs) { return rhs.mask | lhs.mask; }
-
-template<typename T, typename U>
-requires NotSameType<T, U>
-consteval std::uint32_t operator&(T rhs, T lhs) { return rhs.mask & lhs.mask; }
-
 // for embedded access
-template<typename T, std::size_t BitOffset, std::size_t BitWidth, typename FieldType = READWRITE> struct BitField
+template<typename T, std::size_t BitOffset, std::size_t BitWidth, FixedString, typename FieldType = READWRITE> struct BitField
 {
     static constexpr std::size_t bitOffset = BitOffset;
     static constexpr std::size_t bitWidth = BitWidth;
     static constexpr std::uint32_t mask = getMask<std::uint32_t>(BitOffset, BitWidth);
     constexpr static FieldType Type{};
+
+    template<typename U>
+    requires NotSameType<T, U>
+    constexpr std::uint32_t operator|(U lhs) const { return mask | lhs.mask; }
+
+    template<typename U>
+    requires NotSameType<T, U>
+    constexpr std::uint32_t operator&(U lhs) const { return mask & lhs.mask; }
 };
 
+template<unsigned N> struct FixedString
+{
+    char buf[N + 1]{};
+    constexpr FixedString(char const* s)
+    {
+        for (unsigned i = 0; i != N; ++i)
+            buf[i] = s[i];
+    }
+    constexpr operator char const*() const { return buf; }
+};
+template<unsigned N> FixedString(const char (&)[N]) -> FixedString<N - 1>;
+
 // dummy for non embedded access
-template<typename RegisterWidth, std::uint32_t RegisterAddress, RegisterWidth ResetValue, typename RegisterType, typename... Fields> class Register
+template<typename RegisterWidth, std::uint32_t, RegisterWidth ResetValue, typename RegisterType, FixedString, typename... Fields> class Register
 {
 public:
     Register& operator=(RegisterWidth bitMask) { write<RegisterType>(bitMask); }
@@ -88,6 +100,8 @@ public:
         static_assert(field.bitWidth > 1u, "bitWidth is equal to 1, use | or & operator!");
         orAssign<RegisterType>(static_cast<RegisterWidth>((value << field.bitOffset) & field.mask));
     }
+
+    void dump() {}
 
 private:
     template<WriteConcept T> void write(RegisterWidth bitMask) { *rawPtr = bitMask; }

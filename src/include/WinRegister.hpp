@@ -1,8 +1,13 @@
 #pragma once
 #include <cstdint>
+#include <fmt/format.h>
 #include <limits>
+#include <map>
+#include <string_view>
 #include <tuple>
 #include <type_traits>
+#include <array>
+#include <typeindex>
 
 class READONLY
 {};
@@ -21,15 +26,6 @@ template<typename Type> constexpr auto getMask(std::size_t bitOffset, std::size_
     return mask;
 }
 
-// for embedded access
-template<typename T, std::size_t BitOffset, std::size_t BitWidth, typename FieldType = READWRITE> struct BitField
-{
-    static constexpr std::size_t bitOffset = BitOffset;
-    static constexpr std::size_t bitWidth = BitWidth;
-    static constexpr std::uint32_t mask = getMask<std::uint32_t>(BitOffset, BitWidth);
-    constexpr static FieldType Type{};
-};
-
 template<typename T>
 concept WriteConcept = std::is_same_v<T, READWRITE> || std::is_same_v<T, WRITEONLY>;
 
@@ -39,16 +35,49 @@ concept ReadConcept = std::is_same_v<T, READWRITE> || std::is_same_v<T, READONLY
 template<typename T, typename U>
 concept NotSameType = !std::is_same_v<T, U> && std::is_class_v<T> && std::is_class_v<U>;
 
-template<typename T, typename U>
-requires NotSameType<T, U>
-consteval std::uint32_t operator|(T rhs, U lhs) { return rhs.mask | lhs.mask; }
+template<unsigned N> struct FixedString
+{
+    char buf[N+1]{};
+    constexpr FixedString(char const* s)
+    {
+        for (unsigned i = 0; i != N; ++i)
+            buf[i] = s[i];
+    }
+    constexpr operator char const*() const { return buf; }
+};
+template<unsigned N> FixedString(const char (&)[N]) -> FixedString<N - 1>;
 
-template<typename T, typename U>
-requires NotSameType<T, U>
-consteval std::uint32_t operator&(T rhs, T lhs) { return rhs.mask & lhs.mask; }
+// for embedded access
+template<typename T, size_t BitOffset, size_t BitWidth, FixedString Name, typename FieldType = READWRITE> struct BitField
+{
+    static constexpr std::size_t bitOffset = BitOffset;
+    static constexpr std::size_t bitWidth = BitWidth;
+    static constexpr std::uint32_t mask = getMask<std::uint32_t>(BitOffset, BitWidth);
+    static constexpr char const* name = Name;
+    constexpr static FieldType Type{};
+
+    template<typename U>
+    requires NotSameType<T, U>
+    constexpr std::uint32_t operator|(U lhs) const { return mask | lhs.mask; }
+
+    template<typename U>
+    requires NotSameType<T, U>
+    constexpr std::uint32_t operator&(U lhs) const { return mask & lhs.mask; }
+};
+
+struct BitInfo
+{
+    BitInfo(size_t bitWidth = 0, std::string_view type = "R/W", std::string_view name = "Reserved") : bitWidth(bitWidth), type(type), name(name) {}
+    ~BitInfo() = default;
+    size_t bitWidth;
+    std::string_view type;
+    std::string_view name;
+};
+
+std::map<std::type_index, std::string_view> typeMap = {{typeid(READONLY), "R"}, {typeid(WRITEONLY), "W"}, {typeid(READWRITE), "R/W"}};
 
 // dummy for non embedded access
-template<typename RegisterWidth, std::uint32_t RegisterAddress, RegisterWidth ResetValue, typename RegisterType, typename... Fields> class Register
+template<typename RegisterWidth, std::uint32_t, RegisterWidth ResetValue, typename RegisterType, FixedString Name, typename... Fields> class Register
 {
 public:
     Register& operator=(RegisterWidth bitMask) { write<RegisterType>(bitMask); }
@@ -91,6 +120,29 @@ public:
 
     void reset() { raw = ResetValue; }
 
+    void dump()
+    {
+        if constexpr (sizeof...(Fields) > 0)
+        {
+            fmt::print("Register {:^12}\n", name);
+            std::array<BitInfo, std::numeric_limits<RegisterWidth>::digits> r;
+            std::apply([&](auto&...) { ((r[Fields::bitOffset] = BitInfo{Fields::bitWidth, typeMap[typeid(Fields::Type)], Fields::name}), ...); }, r);
+            size_t offset = 0;
+            for (auto iter = r.begin(); iter != r.end(); iter++, offset++)
+            {
+                fmt::print("| {:-^20}|\n", "");
+                fmt::print("|{0:^10}{1:^10} | <-- Bit {2}\n", iter->name, iter->type, offset);
+                for (size_t i = 1; i < iter->bitWidth; i++)
+                {
+                    offset++;
+                    iter++;
+                    fmt::print("|{0:^20} |\n", "");
+                }
+            }
+            fmt::print("| {:-^20}|\n", "");
+        }
+    }
+
 private:
     template<WriteConcept T> void write(RegisterWidth bitMask) { *rawPtr = bitMask; }
 
@@ -103,4 +155,6 @@ private:
 
     RegisterWidth raw = {ResetValue};
     RegisterWidth* rawPtr = reinterpret_cast<RegisterWidth*>(&raw);
+
+    static constexpr char const* name = Name;
 };

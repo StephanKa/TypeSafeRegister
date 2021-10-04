@@ -15,7 +15,7 @@ TARGET_INCLUDE_DIRECTORIES(tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src/gene
 
 ADD_CUSTOM_COMMAND(TARGET tests
                    PRE_BUILD
-                   COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/../src/generateDefinition.py ${CMAKE_CURRENT_SOURCE_DIR}/../src
+                   COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/../src/generateDefinition.py.in ${CMAKE_CURRENT_SOURCE_DIR}/../src
                    DEPENDS TypeRegisterExample)
 
 # automatically discover tests that are defined in catch based test files you can modify the unittests. Set TEST_PREFIX

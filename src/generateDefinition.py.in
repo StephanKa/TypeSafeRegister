@@ -8,7 +8,7 @@ from jinja2 import Environment, FileSystemLoader
 if __name__ == '__main__':
     file_loader = FileSystemLoader('{0}/../templates'.format(sys.argv[1]))
     env = Environment(loader=file_loader)
-    parser = SVDParser.for_packaged_svd('STMicro', 'STM32F20x.svd')
+    parser = SVDParser.for_packaged_svd('STMicro', '@CHIP_FAMILY@')
     svd_dict = parser.get_device().to_dict()
     with open("test.json", "w") as f:
         f.write(json.dumps(svd_dict, sort_keys=True, indent=4, separators=(',', ': ')))
