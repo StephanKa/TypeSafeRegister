@@ -67,7 +67,7 @@ template<typename T, size_t BitOffset, size_t BitWidth, FixedString Name, typena
 
 struct BitInfo
 {
-    BitInfo(size_t width = 0, std::string_view bitType = "R/W", std::string_view bitName = "Reserved") : bitWidth(width), type(bitType), name(bitName) {}
+    BitInfo(size_t width = 0, std::string_view bitType = "N/A", std::string_view bitName = "Reserved") : bitWidth(width), type(bitType), name(bitName) {}
     ~BitInfo() = default;
     size_t bitWidth;
     std::string_view type;
