@@ -17,7 +17,7 @@ TARGET_LINK_LIBRARIES(catch_main PRIVATE project_options)
 
 ADD_EXECUTABLE(tests tests.cpp)
 TARGET_LINK_LIBRARIES(tests PRIVATE project_warnings project_options catch_main CONAN_PKG::fmt)
-TARGET_INCLUDE_DIRECTORIES(tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/generated ${CMAKE_CURRENT_SOURCE_DIR}/../src/include)
+TARGET_INCLUDE_DIRECTORIES(tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src/include)
 
 ADD_CUSTOM_COMMAND(TARGET tests
                    PRE_BUILD
