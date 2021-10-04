@@ -1,5 +1,5 @@
 #include <catch2/catch.hpp>
-#include <DCMI.hpp>
+#include "DCMI.hpp"
 
 
 TEST_CASE("Test initial DCMI value", "Initial instance DCMI") {
