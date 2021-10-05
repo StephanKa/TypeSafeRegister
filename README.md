@@ -120,3 +120,31 @@ Register      CR
 - Supports many chip families, see **cmsis-svd**
 - Code generation will create files for development machines and embedded devices, easier write of unit tests
 - Dump generated register values , see example output above
+
+## Size Comparison
+
+- [Windows / Linux development](https://godbolt.org/z/rK8vcG4n6)
+
+  This will result in larger files because of the possibility of dumping the registers.
+
+- [MCU development](https://godbolt.org/z/bqPhda5fE) 
+````asm
+main:  # @main
+        mov     rax, qword ptr [rip + DCMI::ICR+8]
+        or      dword ptr [rax], 21
+        mov     rcx, qword ptr [rip + RNG::CR+8]
+        mov     eax, dword ptr [rcx]
+        or      eax, 12
+        mov     dword ptr [rcx], eax
+        and     eax, 2147483647
+        ret
+DCMI::ICR:
+        .long   0                               # 0x0
+        .zero   4
+        .quad   DCMI::ICR
+
+RNG::CR:
+        .long   0                               # 0x0
+        .zero   4
+        .quad   RNG::CR
+````
