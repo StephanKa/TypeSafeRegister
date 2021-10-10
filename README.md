@@ -62,51 +62,51 @@ Register      CR
 | --------------------|
 |  VSPOL      R/W     | <-- Bit 7
 | --------------------|
-|   FCRC      R/W     | <-- Bit 8
+|   FCRC      R/W     | <-- Bit 8 - 9
 |                     |
 | --------------------|
-|   EDM       R/W     | <-- Bit 10
+|   EDM       R/W     | <-- Bit 10 - 11
 |                     |
 | --------------------|
-| Reserved    R/W     | <-- Bit 12
+| Reserved    N/A     | <-- Bit 12
 | --------------------|
-| Reserved    R/W     | <-- Bit 13
+| Reserved    N/A     | <-- Bit 13
 | --------------------|
 |  ENABLE     R/W     | <-- Bit 14
 | --------------------|
-| Reserved    R/W     | <-- Bit 15
+| Reserved    N/A     | <-- Bit 15
 | --------------------|
-| Reserved    R/W     | <-- Bit 16
+| Reserved    N/A     | <-- Bit 16
 | --------------------|
-| Reserved    R/W     | <-- Bit 17
+| Reserved    N/A     | <-- Bit 17
 | --------------------|
-| Reserved    R/W     | <-- Bit 18
+| Reserved    N/A     | <-- Bit 18
 | --------------------|
-| Reserved    R/W     | <-- Bit 19
+| Reserved    N/A     | <-- Bit 19
 | --------------------|
-| Reserved    R/W     | <-- Bit 20
+| Reserved    N/A     | <-- Bit 20
 | --------------------|
-| Reserved    R/W     | <-- Bit 21
+| Reserved    N/A     | <-- Bit 21
 | --------------------|
-| Reserved    R/W     | <-- Bit 22
+| Reserved    N/A     | <-- Bit 22
 | --------------------|
-| Reserved    R/W     | <-- Bit 23
+| Reserved    N/A     | <-- Bit 23
 | --------------------|
-| Reserved    R/W     | <-- Bit 24
+| Reserved    N/A     | <-- Bit 24
 | --------------------|
-| Reserved    R/W     | <-- Bit 25
+| Reserved    N/A     | <-- Bit 25
 | --------------------|
-| Reserved    R/W     | <-- Bit 26
+| Reserved    N/A     | <-- Bit 26
 | --------------------|
-| Reserved    R/W     | <-- Bit 27
+| Reserved    N/A     | <-- Bit 27
 | --------------------|
-| Reserved    R/W     | <-- Bit 28
+| Reserved    N/A     | <-- Bit 28
 | --------------------|
-| Reserved    R/W     | <-- Bit 29
+| Reserved    N/A     | <-- Bit 29
 | --------------------|
-| Reserved    R/W     | <-- Bit 30
+| Reserved    N/A     | <-- Bit 30
 | --------------------|
-| Reserved    R/W     | <-- Bit 31
+| Reserved    N/A     | <-- Bit 31
 | --------------------|
 
 ````

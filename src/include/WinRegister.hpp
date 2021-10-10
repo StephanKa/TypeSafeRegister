@@ -131,7 +131,14 @@ public:
             for (auto iter = r.begin(); iter != r.end(); iter++, offset++)
             {
                 fmt::print("| {:-^20}|\n", "");
-                fmt::print("|{0:^10}{1:^10} | <-- Bit {2}\n", iter->name, iter->type, offset);
+                if(iter->bitWidth > 1)
+                {
+                    fmt::print("|{0:^10}{1:^10} | <-- Bit {2} - {3}\n", iter->name, iter->type, offset, offset + iter->bitWidth - 1);
+                }
+                else
+                {
+                    fmt::print("|{0:^10}{1:^10} | <-- Bit {2}\n", iter->name, iter->type, offset);
+                }
                 for (size_t i = 1; i < iter->bitWidth; i++)
                 {
                     offset++;
