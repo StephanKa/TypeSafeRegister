@@ -148,3 +148,10 @@ RNG::CR:
         .zero   4
         .quad   RNG::CR
 ````
+
+## To-Do
+
+- add support for enumerated values
+  - get list of all enumerated values and reduce generated output
+- rework jinja
+- add Register support for enum class
