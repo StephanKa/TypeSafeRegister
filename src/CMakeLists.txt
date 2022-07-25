@@ -1,8 +1,12 @@
 # Generic test that uses conan libs
 SET(PROJECT_NAME TypeRegisterExample)
 
+IF(NOT DEFINED ${CHIP_MANUFACTURER})
+    SET(CHIP_MANUFACTURER Nordic)
+ENDIF()
+
 IF(NOT DEFINED ${CHIP_FAMILY})
-    SET(CHIP_FAMILY STM32F20x.svd)
+    SET(CHIP_FAMILY nrf9160.svd)
 ENDIF()
 
 CONFIGURE_FILE(generateDefinition.py.in generateDefinition.py @ONLY)

@@ -9,12 +9,21 @@
 #include <array>
 #include <typeindex>
 
-class READONLY
+struct READONLY
 {};
-class WRITEONLY
+struct WRITEONLY
 {};
-class READWRITE : public READONLY, public WRITEONLY
+struct READWRITE : public READONLY, public WRITEONLY
 {};
+
+template<typename T>
+concept WriteConcept = std::is_same_v<T, READWRITE> || std::is_same_v<T, WRITEONLY>;
+
+template<typename T>
+concept ReadConcept = std::is_same_v<T, READWRITE> || std::is_same_v<T, READONLY>;
+
+template<typename T, typename U>
+concept NotSameType = !std::is_same_v<T, U> && std::is_class_v<T> && std::is_class_v<U>;
 
 template<typename Type> constexpr auto getMask(std::size_t bitOffset, std::size_t bitWidth)
 {
@@ -26,24 +35,17 @@ template<typename Type> constexpr auto getMask(std::size_t bitOffset, std::size_
     return mask;
 }
 
-template<typename T>
-concept WriteConcept = std::is_same_v<T, READWRITE> || std::is_same_v<T, WRITEONLY>;
-
-template<typename T>
-concept ReadConcept = std::is_same_v<T, READWRITE> || std::is_same_v<T, READONLY>;
-
-template<typename T, typename U>
-concept NotSameType = !std::is_same_v<T, U> && std::is_class_v<T> && std::is_class_v<U>;
-
 template<unsigned N> struct FixedString
 {
-    char buf[N+1]{};
+    std::array<char, N+1>buf{};
     constexpr FixedString(char const* s)
     {
         for (unsigned i = 0; i != N; ++i)
+        {
             buf[i] = s[i];
+        }
     }
-    constexpr operator char const*() const { return buf; }
+    constexpr operator char const*() const { return buf.data(); }
 };
 template<unsigned N> FixedString(const char (&)[N]) -> FixedString<N - 1>;
 
@@ -68,7 +70,6 @@ template<typename T, size_t BitOffset, size_t BitWidth, FixedString Name, typena
 struct BitInfo
 {
     BitInfo(size_t width = 0, std::string_view bitType = "N/A", std::string_view bitName = "Reserved") : bitWidth(width), type(bitType), name(bitName) {}
-    ~BitInfo() = default;
     size_t bitWidth;
     std::string_view type;
     std::string_view name;

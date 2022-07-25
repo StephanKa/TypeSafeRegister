@@ -16,20 +16,18 @@ if __name__ == '__main__':
     peripherals = parser.get_device().peripherals
     peripherals = sorted(peripherals, key=lambda x: x.base_address)
     enumerated_values_dict = dict()
+    register_dict = dict()
     for peripheral in peripherals:
         s = ""
         peripheral.base_address = "0x%08x" % peripheral.base_address
         upper_peripheral_name = peripheral.name.upper()
+        register_dict[upper_peripheral_name] = list()
         if upper_peripheral_name not in enumerated_values_dict:
             enumerated_values_dict[upper_peripheral_name] = dict()
         reg_names = list()
         for reg in peripheral.registers:
             reg.fields = sorted(reg.fields, key=lambda x: x.bit_offset)
             reg.description = re.sub(" +", " ", reg.description.replace("\n", ""))
-            if reg.name in reg_names:
-                reg.name = "DUPLICATE:{0}".format(reg.name)
-                continue
-            reg_names.append(reg.name)
             if not isinstance(reg.address_offset, str):
                 reg.address_offset = "0x%08x" % reg.address_offset
             else:
@@ -43,11 +41,17 @@ if __name__ == '__main__':
                             enumerated_value.description = re.sub(" +", " ", enumerated_value.description.replace("\n", ""))
                 else:
                     field.description = re.sub(" +", " ", field.description.replace("\n", ""))
+            if reg.name in reg_names:
+                continue
+            reg_names.append(reg.name)
+            if reg not in register_dict[upper_peripheral_name]:
+                register_dict[upper_peripheral_name].append(reg)
+        print(upper_peripheral_name)
 
     template = env.get_template('Peripherals.jinja2')
     if not os.path.exists("{0}/generated".format(sys.argv[1])):
         os.mkdir("{0}/generated".format(sys.argv[1]))
     for peripheral in peripherals:
-        output = template.render(peripheral=peripheral, enum_values=enumerated_values_dict[peripheral.name.upper()])
+        output = template.render(peripheral=peripheral, register_dict=register_dict[peripheral.name.upper()], enum_values=enumerated_values_dict[peripheral.name.upper()])
         with open("{0}/generated/{1}.hpp".format(sys.argv[1], peripheral.name.upper()), "w") as f:
             f.write(output)
