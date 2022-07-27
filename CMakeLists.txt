@@ -1,5 +1,13 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.15)
 
+IF(NOT DEFINED ${CHIP_MANUFACTURER})
+    SET(CHIP_MANUFACTURER STMicro)
+ENDIF()
+
+IF(NOT DEFINED ${CHIP_FAMILY})
+    SET(CHIP_FAMILY STM32F20x.svd)
+ENDIF()
+
 # Set the project name to your project name, my project isn't very descriptive
 PROJECT(TypeSafeRegister CXX)
 INCLUDE(cmake/StandardProjectSettings.cmake)
@@ -60,13 +68,15 @@ SET(CONAN_EXTRA_OPTIONS "")
 INCLUDE(cmake/Conan.cmake)
 RUN_CONAN()
 
+FIND_PACKAGE(Python REQUIRED)
+
 IF(ENABLE_TESTING)
     ENABLE_TESTING()
-    MESSAGE("Building Tests. Be sure to check out test/constexpr_tests for constexpr testing")
+    MESSAGE("Building Tests.")
     ADD_SUBDIRECTORY(test)
 ENDIF()
 
-ADD_SUBDIRECTORY(src)
+ADD_SUBDIRECTORY(examples)
 
 OPTION(ENABLE_UNITY "Enable Unity builds of projects" OFF)
 IF(ENABLE_UNITY)
