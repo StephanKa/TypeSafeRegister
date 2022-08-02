@@ -76,6 +76,15 @@ template<typename T, size_t BitOffset, size_t BitWidth, FixedString Name, typena
     }
 };
 
+template<typename Enum, size_t BitOffset, size_t BitWidth, FixedString Name, typename FieldType = READWRITE> struct EnumeratedField
+{
+    static constexpr std::size_t bitOffset = BitOffset;
+    static constexpr std::size_t bitWidth = BitWidth;
+    static constexpr char const* name = Name;
+    constexpr static FieldType Type{};
+    using EnumType = Enum;
+};
+
 struct BitInfo
 {
     BitInfo(size_t width = 0, std::string_view bitType = "N/A", std::string_view bitName = "Reserved") : bitWidth(width), type(bitType), name(bitName) {}
@@ -135,35 +144,34 @@ public:
 
     void dump()
     {
-        if constexpr (sizeof...(Fields) > 0 && !std::conjunction_v<is_class_enum<Fields>...>)
+        if constexpr (sizeof...(Fields) > 0)
         {
-            fmt::print("Register {:^12}\n", name);
+            constexpr std::string_view horizontalLine = "|{:-^41}|\n";
+            constexpr std::string_view bitContentSingleWidth = "|{0:^20}{1:^20} | <-- Bit {2}\n";
+            constexpr std::string_view bitContentMultipleWidth = "|{0:^20}{1:^20} | <-- Bit {2} - {3}\n";
+            fmt::print("Register name: {:^12}\n", name);
             std::array<BitInfo, std::numeric_limits<RegisterWidth>::digits> r;
             std::apply([&](auto&...) { ((r[Fields::bitOffset] = BitInfo{Fields::bitWidth, typeMap[typeid(Fields::Type)], Fields::name}), ...); }, r);
             size_t offset = 0;
             for (auto iter = r.begin(); iter != r.end(); iter++, offset++)
             {
-                fmt::print("| {:-^20}|\n", "");
+                fmt::print(horizontalLine, "");
                 if (iter->bitWidth > 1)
                 {
-                    fmt::print("|{0:^10}{1:^10} | <-- Bit {2} - {3}\n", iter->name, iter->type, offset, offset + iter->bitWidth - 1);
+                    fmt::print(bitContentMultipleWidth, iter->name, iter->type, offset, offset + iter->bitWidth - 1);
                 }
                 else
                 {
-                    fmt::print("|{0:^10}{1:^10} | <-- Bit {2}\n", iter->name, iter->type, offset);
+                    fmt::print(bitContentSingleWidth, iter->name, iter->type, offset);
                 }
                 for (size_t i = 1; i < iter->bitWidth; i++)
                 {
                     offset++;
                     iter++;
-                    fmt::print("|{0:^20} |\n", "");
+                    fmt::print("|{0:^40} |\n", "");
                 }
             }
-            fmt::print("| {:-^20}|\n", "");
-        }
-        else
-        {
-
+            fmt::print(horizontalLine, "");
         }
     }
 

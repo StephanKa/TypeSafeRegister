@@ -77,9 +77,3 @@ IF(ENABLE_TESTING)
 ENDIF()
 
 ADD_SUBDIRECTORY(examples)
-
-OPTION(ENABLE_UNITY "Enable Unity builds of projects" OFF)
-IF(ENABLE_UNITY)
-    # Add for any project you want to apply unity builds for
-    SET_TARGET_PROPERTIES(TypeRegisterExample PROPERTIES UNITY_BUILD ON)
-ENDIF()

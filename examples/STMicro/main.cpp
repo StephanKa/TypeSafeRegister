@@ -5,10 +5,10 @@
 
 int main()
 {
-    fmt::print("CRC::DR.read():{0}\n", CRC::DR.read<decltype(CRC::DR_)>());
-    fmt::print("RNG::SR.read():{0}\n", RNG::SR.read<decltype(RNG::SR_DRDY)>());
+    fmt::print("CRC::DR.read():{0}\n", CRC::DR.read<decltype(CRC::BitFields::DR)>());
+    fmt::print("RNG::SR.read():{0}\n", RNG::SR.read<decltype(RNG::BitFields::DRDY)>());
     fmt::print("RNG::SR():{0}\n", RNG::SR());
-    DCMI::ICR |= DCMI::ICR_ERR_ISC | DCMI::ICR_FRAME_ISC;
+    DCMI::ICR |= DCMI::BitFields::ERR_ISC | DCMI::BitFields::FRAME_ISC;
     //fmt::print("DCMI::ICR():{0}\n", DCMI::ICR()); // compile error because it can't be read
     // dump register map
     DCMI::CR.dump();

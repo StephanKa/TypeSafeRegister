@@ -1,7 +1,7 @@
 SET(PROJECT_NAME STMicroExample)
 SET(TEMPLATE_FOLDER_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../templates)
 
-CONFIGURE_FILE(../generateDefinition.py.in generateDefinition.py @ONLY)
+CONFIGURE_FILE(../../templates/generator/generateDefinition.py.in generateDefinition.py @ONLY)
 
 ADD_EXECUTABLE(${PROJECT_NAME} main.cpp)
 TARGET_LINK_LIBRARIES(${PROJECT_NAME}

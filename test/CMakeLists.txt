@@ -9,7 +9,7 @@ ENDIF()
 
 SET(TEMPLATE_FOLDER_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../templates)
 
-CONFIGURE_FILE(../examples/generateDefinition.py.in generateDefinition.py @ONLY)
+CONFIGURE_FILE(../templates/generator/generateDefinition.py.in generateDefinition.py @ONLY)
 
 ADD_LIBRARY(catch_main STATIC catch_main.cpp)
 TARGET_LINK_LIBRARIES(catch_main PUBLIC CONAN_PKG::catch2)

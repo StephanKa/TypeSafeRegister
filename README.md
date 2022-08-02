@@ -6,7 +6,8 @@ This project is based on [Lefticus - cpp_starter_project](https://github.com/lef
 
 ## Prerequisites
 
-- [cmsis_svd](https://github.com/posborne/cmsis-svd/tree/master/python)
+- install [cmsis_svd](https://github.com/posborne/cmsis-svd/tree/master/python) with ``python3 -m pip install -U -e 'git+https://github.com/posborne/cmsis-svd.git#egg=cmsis-svd&subdirectory=python'``
+
 
 ## General
 
@@ -19,7 +20,8 @@ For a list of files have a look at the data folder at [cmsis_svd data](https://g
 
 ### Usage
 
-Example main.cpp can be found in the source directory.
+#### STMicro Example
+**STMicro**: main.cpp can be found in the example directory.
 ````c++
 #include <CRC.hpp>
 #include <DCMI.hpp>
@@ -28,11 +30,11 @@ Example main.cpp can be found in the source directory.
 
 int main()
 {
-    fmt::print("CRC::DR.read():{0}\n", CRC::DR.read<decltype(CRC::DR_)>());
-    fmt::print("RNG::SR.read():{0}\n", RNG::SR.read<decltype(RNG::DRDY)>());
+    fmt::print("CRC::DR.read():{0}\n", CRC::DR.read<decltype(CRC::BitFields::DR)>());
+    fmt::print("RNG::SR.read():{0}\n", RNG::SR.read<decltype(RNG::BitFields::DRDY)>());
     fmt::print("RNG::SR():{0}\n", RNG::SR());
-    DCMI::ICR |= DCMI::ERR_ISC | DCMI::FRAME_ISC;
-    // fmt::print("DCMI::ICR():{0}\n", DCMI::ICR()); // compile error because it can't be read
+    DCMI::ICR |= DCMI::BitFields::ERR_ISC | DCMI::BitFields::FRAME_ISC;
+    //fmt::print("DCMI::ICR():{0}\n", DCMI::ICR()); // compile error because it can't be read
     // dump register map
     DCMI::CR.dump();
     return static_cast<int>(RNG::SR());
@@ -44,71 +46,157 @@ Example output for STM32F20x.svd
 CRC::DR.read():4294967295
 RNG::SR.read():0
 RNG::SR():0
-Register      CR
-| --------------------|
-| CAPTURE     R/W     | <-- Bit 0
-| --------------------|
-|    CM       R/W     | <-- Bit 1
-| --------------------|
-|   CROP      R/W     | <-- Bit 2
-| --------------------|
-|   JPEG      R/W     | <-- Bit 3
-| --------------------|
-|   ESS       R/W     | <-- Bit 4
-| --------------------|
-|  PCKPOL     R/W     | <-- Bit 5
-| --------------------|
-|  HSPOL      R/W     | <-- Bit 6
-| --------------------|
-|  VSPOL      R/W     | <-- Bit 7
-| --------------------|
-|   FCRC      R/W     | <-- Bit 8 - 9
-|                     |
-| --------------------|
-|   EDM       R/W     | <-- Bit 10 - 11
-|                     |
-| --------------------|
-| Reserved    N/A     | <-- Bit 12
-| --------------------|
-| Reserved    N/A     | <-- Bit 13
-| --------------------|
-|  ENABLE     R/W     | <-- Bit 14
-| --------------------|
-| Reserved    N/A     | <-- Bit 15
-| --------------------|
-| Reserved    N/A     | <-- Bit 16
-| --------------------|
-| Reserved    N/A     | <-- Bit 17
-| --------------------|
-| Reserved    N/A     | <-- Bit 18
-| --------------------|
-| Reserved    N/A     | <-- Bit 19
-| --------------------|
-| Reserved    N/A     | <-- Bit 20
-| --------------------|
-| Reserved    N/A     | <-- Bit 21
-| --------------------|
-| Reserved    N/A     | <-- Bit 22
-| --------------------|
-| Reserved    N/A     | <-- Bit 23
-| --------------------|
-| Reserved    N/A     | <-- Bit 24
-| --------------------|
-| Reserved    N/A     | <-- Bit 25
-| --------------------|
-| Reserved    N/A     | <-- Bit 26
-| --------------------|
-| Reserved    N/A     | <-- Bit 27
-| --------------------|
-| Reserved    N/A     | <-- Bit 28
-| --------------------|
-| Reserved    N/A     | <-- Bit 29
-| --------------------|
-| Reserved    N/A     | <-- Bit 30
-| --------------------|
-| Reserved    N/A     | <-- Bit 31
-| --------------------|
+Register name:      CR
+|-----------------------------------------|
+|      CAPTURE               R/W          | <-- Bit 0
+|-----------------------------------------|
+|         CM                 R/W          | <-- Bit 1
+|-----------------------------------------|
+|        CROP                R/W          | <-- Bit 2
+|-----------------------------------------|
+|        JPEG                R/W          | <-- Bit 3
+|-----------------------------------------|
+|        ESS                 R/W          | <-- Bit 4
+|-----------------------------------------|
+|       PCKPOL               R/W          | <-- Bit 5
+|-----------------------------------------|
+|       HSPOL                R/W          | <-- Bit 6
+|-----------------------------------------|
+|       VSPOL                R/W          | <-- Bit 7
+|-----------------------------------------|
+|        FCRC                R/W          | <-- Bit 8 - 9
+|                                         |
+|-----------------------------------------|
+|        EDM                 R/W          | <-- Bit 10 - 11
+|                                         |
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 12
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 13
+|-----------------------------------------|
+|       ENABLE               R/W          | <-- Bit 14
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 15
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 16
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 17
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 18
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 19
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 20
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 21
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 22
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 23
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 24
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 25
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 26
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 27
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 28
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 29
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 30
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 31
+|-----------------------------------------|
+````
 
+#### Nordic Example
+**Nordic**: main.cpp can be found in the example directory.
+````c++
+#include <TIMER0_S.hpp>
+#include <fmt/format.h>
+
+int main()
+{
+    fmt::print("TIMER0_S::BITMODE():{0}\n", TIMER0_S::BITMODE());
+    // dump register map
+    TIMER0_S::SHORTS.dump();
+    return 0;
+}
+
+````
+
+Example output for nrf9160.svd
+````bash
+TIMER0_S::BITMODE():0
+Register name:    SHORTS
+|-----------------------------------------|
+|   COMPARE0_CLEAR           R/W          | <-- Bit 0
+|-----------------------------------------|
+|   COMPARE1_CLEAR           R/W          | <-- Bit 1
+|-----------------------------------------|
+|   COMPARE2_CLEAR           R/W          | <-- Bit 2
+|-----------------------------------------|
+|   COMPARE3_CLEAR           R/W          | <-- Bit 3
+|-----------------------------------------|
+|   COMPARE4_CLEAR           R/W          | <-- Bit 4
+|-----------------------------------------|
+|   COMPARE5_CLEAR           R/W          | <-- Bit 5
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 6
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 7
+|-----------------------------------------|
+|   COMPARE0_STOP            R/W          | <-- Bit 8
+|-----------------------------------------|
+|   COMPARE1_STOP            R/W          | <-- Bit 9
+|-----------------------------------------|
+|   COMPARE2_STOP            R/W          | <-- Bit 10
+|-----------------------------------------|
+|   COMPARE3_STOP            R/W          | <-- Bit 11
+|-----------------------------------------|
+|   COMPARE4_STOP            R/W          | <-- Bit 12
+|-----------------------------------------|
+|   COMPARE5_STOP            R/W          | <-- Bit 13
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 14
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 15
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 16
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 17
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 18
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 19
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 20
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 21
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 22
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 23
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 24
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 25
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 26
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 27
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 28
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 29
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 30
+|-----------------------------------------|
+|      Reserved              N/A          | <-- Bit 31
+|-----------------------------------------|
 ````
 
 
@@ -123,35 +211,27 @@ Register      CR
 
 ## Size Comparison
 
-- [Windows / Linux development](https://godbolt.org/z/rK8vcG4n6)
+- [Windows / Linux development](https://godbolt.org/z/eGav7n5aa)
 
   This will result in larger files because of the possibility of dumping the registers.
 
-- [MCU development](https://godbolt.org/z/bqPhda5fE) 
+- [MCU development](https://godbolt.org/z/qxWE5TbYr) 
 ````asm
-main:  # @main
-        mov     rax, qword ptr [rip + DCMI::ICR+8]
-        or      dword ptr [rax], 21
-        mov     rcx, qword ptr [rip + RNG::CR+8]
-        mov     eax, dword ptr [rcx]
-        or      eax, 12
-        mov     dword ptr [rcx], eax
+main:
+        mov     rax, QWORD PTR DCMI::ICR[rip]
+        mov     rdx, QWORD PTR RNG::CR[rip]
+        or      DWORD PTR [rax], 21
+        mov     eax, DWORD PTR [rdx]
+        mov     ecx, eax
         and     eax, 2147483647
+        or      ecx, 12
+        or      eax, 12
+        mov     DWORD PTR [rdx], ecx
         ret
-DCMI::ICR:
-        .long   0                               # 0x0
-        .zero   4
-        .quad   DCMI::ICR
-
-RNG::CR:
-        .long   0                               # 0x0
-        .zero   4
-        .quad   RNG::CR
 ````
 
 ## To-Do
 
-- add support for enumerated values
-  - get list of all enumerated values and reduce generated output
-- rework jinja
-- add Register support for enum class
+- generate tests for all peripherals
+- remove duplicate code in CMake
+- use CMake presets

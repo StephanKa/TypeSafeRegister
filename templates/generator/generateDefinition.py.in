@@ -13,6 +13,7 @@ if __name__ == '__main__':
     peripherals = parser.get_device().peripherals
     peripherals = sorted(peripherals, key=lambda x: x.base_address)
     enumerated_values_dict = dict()
+    bitfield_dict = dict()
     register_dict = dict()
     for peripheral in peripherals:
         s = ""
@@ -21,6 +22,8 @@ if __name__ == '__main__':
         register_dict[upper_peripheral_name] = list()
         if upper_peripheral_name not in enumerated_values_dict:
             enumerated_values_dict[upper_peripheral_name] = dict()
+        if upper_peripheral_name not in bitfield_dict:
+            bitfield_dict[upper_peripheral_name] = dict()
         reg_names = list()
         for reg in peripheral.registers:
             reg.fields = sorted(reg.fields, key=lambda x: x.bit_offset)
@@ -34,20 +37,27 @@ if __name__ == '__main__':
                     if field.name not in enumerated_values_dict[upper_peripheral_name]:
                         enumerated_values_dict[upper_peripheral_name][field.name] = list()
                         for enumerated_value in field.enumerated_values:
-                            enumerated_values_dict[upper_peripheral_name][field.name].append({"name": enumerated_value.name, "description": enumerated_value.description, "value": enumerated_value.value << field.bit_offset})
+                            enumerated_values_dict[upper_peripheral_name][field.name].append({"name": enumerated_value.name, "description": enumerated_value.description,
+                                                                                              "value": enumerated_value.value << field.bit_offset, "offset": field.bit_offset,
+                                                                                              "width": field.bit_width, "access": field.access})
                             enumerated_value.description = re.sub(" +", " ", enumerated_value.description.replace("\n", ""))
                 else:
-                    field.description = re.sub(" +", " ", field.description.replace("\n", ""))
+                    if field.name not in bitfield_dict[upper_peripheral_name]:
+                        bitfield_dict[upper_peripheral_name][field.name] = field
+                        bitfield_dict[upper_peripheral_name][field.name].description = re.sub(" +", " ", field.description.replace("\n", ""))
             if reg.name in reg_names:
                 continue
             reg_names.append(reg.name)
             if reg not in register_dict[upper_peripheral_name]:
                 register_dict[upper_peripheral_name].append(reg)
 
-    template = env.get_template('Peripherals.jinja2')
+    template = env.get_template('peripherals/single.jinja2')
     if not os.path.exists("@CMAKE_CURRENT_BINARY_DIR@/generated"):
         os.mkdir("@CMAKE_CURRENT_BINARY_DIR@/generated")
     for peripheral in peripherals:
-        output = template.render(peripheral=peripheral, register_dict=register_dict[peripheral.name.upper()], enum_values=enumerated_values_dict[peripheral.name.upper()])
+        output = template.render(peripheral=peripheral,
+                                 register_dict=register_dict[peripheral.name.upper()],
+                                 enum_values=enumerated_values_dict[peripheral.name.upper()],
+                                 bitfield_values=bitfield_dict[peripheral.name.upper()])
         with open("@CMAKE_CURRENT_BINARY_DIR@/generated/{0}.hpp".format(peripheral.name.upper()), "w") as f:
             f.write(output)

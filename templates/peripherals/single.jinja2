@@ -1,0 +1,73 @@
+#pragma once
+#include <Register.hpp>
+
+{%- set peripheral_name = peripheral.name.upper() %}
+{%- set struct_type = peripheral.name.lower() + "_t" %}
+
+namespace {{ peripheral_name }}
+{
+    struct {{ struct_type }}{};
+
+    constexpr std::uint32_t {{ peripheral_name }}_BASE_ADDRESS = {{ peripheral.base_address }}u;
+    {%- if enum_values | length > 0 %}
+    namespace EnumFields
+    {
+        namespace Enums
+        {
+            {%- for enumerated_value in enum_values %}
+            enum class {{ enumerated_value }} : std::uint32_t
+            { {%- for value in enum_values[enumerated_value] %}
+                // {{ value.description }}
+                {%- if value.name[0].isdigit() %}
+                {{ enumerated_value }}_{{ value.name }} = {{ "0x%0x" | format( value.value | int) }},
+                {%- else %}
+                {{ value.name }} = {{ "0x%0x" | format( value.value | int) }},
+                {%- endif %}
+                {%- endfor %}
+            };
+            {%- endfor %}
+        } // namespace Enums
+
+        {% for enumerated_value in enum_values -%}
+        // bit offset: {{ enum_values[enumerated_value][0].offset }}, bit width: {{ enum_values[enumerated_value][0].width }}
+        constexpr auto {{ enumerated_value }} = EnumeratedField<Enums::{{ enumerated_value }}, {{ enum_values[enumerated_value][0].offset }}, {{ enum_values[enumerated_value][0].width }}, "{{ enumerated_value }}"{% if enum_values[enumerated_value][0].access %}, {{ enum_values[enumerated_value][0].access.upper() | replace("-", "") }}{% endif %}>{};
+        {% endfor -%}
+    } // namespace EnumFields
+    {%- endif %}
+
+    namespace BitFields
+    {
+        {%- for value in bitfield_values %}
+        // bit offset: {{ bitfield_values[value].bit_offset }}, bit width: {{ bitfield_values[value].bit_width }}, {{ bitfield_values[value].description }}
+        constexpr auto {{ bitfield_values[value].name }} = BitField<{{ struct_type }}, {{ bitfield_values[value].bit_offset }}, {{ bitfield_values[value].bit_width }}, "{{ bitfield_values[value].name }}"{% if bitfield_values[value].access %}, {{ bitfield_values[value].access.upper() | replace("-", "") }}{% endif %}>{};
+        {%- endfor %}
+    } // namespace BitFields
+{% for reg in register_dict -%}
+    {%- for field in reg.fields %}
+        {%- if field.enumerated_values %}
+            {%- if field.name not in enum_values %}
+    enum class {{ field.name }} : std::uint{{ reg.size }}_t
+    {
+        {% for enumerated_value in field.enumerated_values -%}
+        // {{ enumerated_value.description }}
+            {% if enumerated_value.name[0].isdigit() -%}
+        {{ enumerated_value.name }} = {{ enumerated_value.value * field.bit_offset }},
+            {% else -%}
+        {{ enumerated_value.name }} = {{ enumerated_value.value * field.bit_offset }},
+            {% endif -%}
+        {% endfor -%}
+    };
+            {%- endif %}
+    {%- endif %}
+    {%- endfor %}
+    // {{ reg.description }}
+    static Register<std::uint32_t, {{ peripheral_name }}_BASE_ADDRESS + {{ reg.address_offset }}u, {% if reg.reset_value == None %}0x0{% else %}{{ "0x%0x" | format( reg.reset_value | int) }}{% endif %}{% if reg.access %}, {{ reg.access.upper() | replace("-", "") }}{% else %}, READWRITE{% endif %}, "{{ reg.name.upper() }}"
+    {%- for field in reg.fields -%}
+        {%- if field.enumerated_values -%}
+    , decltype(EnumFields::{{ field.name }})
+        {%- else -%}
+    , decltype(BitFields::{{ field.name }})
+        {%- endif %}
+    {%- endfor %}> {{ reg.name.upper() | replace("[", "_")  | replace("]", "") }};
+{%- endfor %}
+} // namespace {{ peripheral_name }}
