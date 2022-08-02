@@ -211,22 +211,18 @@ Register name:    SHORTS
 
 ## Size Comparison
 
-- [Windows / Linux development](https://godbolt.org/z/eGav7n5aa)
+- [Windows / Linux development](https://godbolt.org/z/7WEKvxc76)
 
   This will result in larger files because of the possibility of dumping the registers.
 
-- [MCU development](https://godbolt.org/z/qxWE5TbYr) 
+- [MCU development](https://godbolt.org/z/7soEMG67s)
 ````asm
-main:
-        mov     rax, QWORD PTR DCMI::ICR[rip]
-        mov     rdx, QWORD PTR RNG::CR[rip]
-        or      DWORD PTR [rax], 21
-        mov     eax, DWORD PTR [rdx]
-        mov     ecx, eax
-        and     eax, 2147483647
-        or      ecx, 12
+main:                                   # @main
+        or      byte ptr [1342504980], 21
+        mov     eax, dword ptr [1342572544]
         or      eax, 12
-        mov     DWORD PTR [rdx], ecx
+        mov     dword ptr [1342572544], eax
+        and     eax, 2147483647
         ret
 ````
 
