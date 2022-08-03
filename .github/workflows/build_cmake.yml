@@ -44,9 +44,6 @@ jobs:
     - name: Install conan
       shell: bash
       run: |
-        python3 -m pip install --upgrade pip setuptools jinja2
-        python3 -m pip install -U -e 'git+https://github.com/posborne/cmsis-svd.git#egg=cmsis-svd&subdirectory=python'
-        python3 -m pip install conan
         source ~/.profile
 
     - name: Configure CMake
@@ -85,12 +82,6 @@ jobs:
         os: [windows-latest, windows-2019]
     steps:
       - uses: actions/checkout@v2
-      - name: Install conan
-        shell: bash
-        run: |
-          python3 -m pip install --upgrade pip setuptools
-          python3 -m pip install conan jinja2
-          python3 -m pip install -U -e 'git+https://github.com/posborne/cmsis-svd.git#egg=cmsis-svd&subdirectory=python'
       - name: Create Build Environment
         # Some projects don't allow in-source building, so create a separate build directory
         # We'll use this as our working directory for all subsequent commands

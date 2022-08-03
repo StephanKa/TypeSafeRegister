@@ -8,6 +8,12 @@ IF(NOT DEFINED ${CHIP_FAMILY})
     SET(CHIP_FAMILY STM32F20x.svd)
 ENDIF()
 
+FIND_PACKAGE(Python COMPONENTS Interpreter REQUIRED)
+
+# install PyPI Python package using pip
+EXECUTE_PROCESS(COMMAND ${Python_EXECUTABLE} -m pip install --user --upgrade pip setuptools jinja2 conan)
+EXECUTE_PROCESS(COMMAND ${Python_EXECUTABLE} -m pip install --user -e "git+https://github.com/posborne/cmsis-svd.git#egg=cmsis-svd&subdirectory=python")
+
 # Set the project name to your project name, my project isn't very descriptive
 PROJECT(TypeSafeRegister CXX)
 INCLUDE(cmake/StandardProjectSettings.cmake)
