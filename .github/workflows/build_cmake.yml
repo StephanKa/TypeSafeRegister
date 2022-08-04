@@ -14,7 +14,7 @@ env:
 jobs:
   linux:
     name: ${{ matrix.os }}, CC=${{ matrix.compiler.name }}
-    runs-on: ${{ matrix.compiler.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false  # 'false' means Don't stop matrix workflows even if some matrix entry fails.
       matrix:
