@@ -13,7 +13,7 @@ env:
 
 jobs:
   linux:
-    name: ${{ matrix.compiler.os }}, CC=${{ matrix.compiler.cc }}
+    name: ${{ matrix.compiler.os }}, CC=${{ matrix.compiler.cpp }}
     runs-on: ${{ matrix.compiler.os }}
     strategy:
       fail-fast: false  # 'false' means Don't stop matrix workflows even if some matrix entry fails.
@@ -43,7 +43,7 @@ jobs:
       run: cmake -E make_directory ${{runner.workspace}}/build
 
     - run:   |
-             bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
+             sudo bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
              sudo apt update
              sudo apt-get install gcc-multilib
              sudo apt install ${{ matrix.compiler.pkgs }}
