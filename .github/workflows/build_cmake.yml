@@ -16,8 +16,14 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-22.04]
-        compiler: [ {cpp: g++-10, c: gcc-10}, {cpp: g++-11, c: gcc-11}, {cpp: g++-12, c: gcc-12}, {cpp: clang++-12, c: clang-12}, {cpp: clang++-13, c: clang-13}, {cpp: clang++-14, c: clang-14} ]
+        os: [ubuntu-20.04, ubuntu-22.04]
+        compiler: [ {cpp: g++-10, c: gcc-10, install: g++10 gcc-10},
+                    {cpp: g++-11, c: gcc-11, install: g++11 gcc-11},
+                    {cpp: g++-12, c: gcc-12, install: g++12 gcc-12},
+                    {cpp: clang++-12, c: clang-12, install: clang-12 llvm-12},
+                    {cpp: clang++-13, c: clang-13, install: clang-13 llvm-13},
+                    {cpp: clang++-14, c: clang-14, install: clang-14 llvm-14}
+                  ]
     steps:
     - uses: actions/checkout@v2
 
@@ -39,7 +45,7 @@ jobs:
     - run:   |
              sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
              sudo apt update
-             sudo apt install ${{ matrix.compiler.c }} ${{ matrix.compiler.cpp }}
+             sudo apt install ${{ matrix.compiler.install }}
       shell: bash
 
     - name: Install conan
