@@ -2,6 +2,8 @@
 #include <DCMI.hpp>
 #include <RNG.hpp>
 #include <fmt/format.h>
+#include "include/version.hpp"
+
 
 int main()
 {
@@ -12,5 +14,9 @@ int main()
     //fmt::print("DCMI::ICR():{0}\n", DCMI::ICR()); // compile error because it can't be read
     // dump register map
     DCMI::CR.dump();
+    fmt::print(R"(major: {}
+minor: {}
+patch: {}
+Githash: {})", SoftwareVersion::Major, SoftwareVersion::Minor, SoftwareVersion::Patch, SoftwareVersion::GitHash);
     return static_cast<int>(RNG::SR());
 }

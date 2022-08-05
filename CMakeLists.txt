@@ -8,6 +8,15 @@ IF(NOT DEFINED ${CHIP_FAMILY})
     SET(CHIP_FAMILY STM32F20x.svd)
 ENDIF()
 
+EXECUTE_PROCESS(
+        COMMAND git log -1 --format=%h
+        WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+        OUTPUT_VARIABLE GIT_HASH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+CONFIGURE_FILE("templates/version.hpp.in" "${CMAKE_BINARY_DIR}/generated/include/version.hpp" ESCAPE_QUOTES)
+
 FIND_PACKAGE(Python COMPONENTS Interpreter REQUIRED)
 
 # install PyPI Python package using pip

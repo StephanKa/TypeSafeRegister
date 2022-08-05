@@ -17,7 +17,8 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME}
                       project_warnings
                       CONAN_PKG::fmt
                       CONAN_PKG::spdlog)
-TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated ../../include)
+MESSAGE(${CMAKE_CURRENT_BINARY_DIR})
+TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated ../../include ${CMAKE_CURRENT_BINARY_DIR}/../../generated)
 
 ADD_CUSTOM_TARGET(${PROJECT_NAME}_Generation
                   COMMAND python${Python_VERSION_MAJOR} ${CMAKE_CURRENT_BINARY_DIR}/generateDefinition.py)
