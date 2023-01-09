@@ -30,7 +30,7 @@ std::is_same_v<T, U>;
 template<typename Type> constexpr auto getMask(std::size_t bitOffset, std::size_t bitWidth)
 {
     Type mask = 0u;
-    for (std::size_t i = 0; i < bitWidth; i++) { mask |= 1 << (bitOffset + i); }
+    for (std::size_t i = 0; i < bitWidth; i++) { mask |= static_cast<Type>(1 << (bitOffset + i)); }
     return mask;
 }
 
