@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.15)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.19)
 
 IF(NOT DEFINED ${CHIP_MANUFACTURER})
     SET(CHIP_MANUFACTURER STMicro)
@@ -7,6 +7,13 @@ ENDIF()
 IF(NOT DEFINED ${CHIP_FAMILY})
     SET(CHIP_FAMILY STM32F20x.svd)
 ENDIF()
+
+IF(NOT DEFINED CXX_STANDARD)
+    SET(CMAKE_CXX_STANDARD 20)
+ELSE()
+    SET(CMAKE_CXX_STANDARD ${CXX_STANDARD})
+ENDIF()
+MESSAGE("Using C++ standard ${CMAKE_CXX_STANDARD}")
 
 EXECUTE_PROCESS(
         COMMAND git log -1 --format=%h
@@ -30,7 +37,7 @@ INCLUDE(cmake/PreventInSourceBuilds.cmake)
 
 # Link this 'library' to set the c++ standard / compile-time options requested
 ADD_LIBRARY(project_options INTERFACE)
-TARGET_COMPILE_FEATURES(project_options INTERFACE cxx_std_20)
+TARGET_COMPILE_FEATURES(project_options INTERFACE cxx_std_${CMAKE_CXX_STANDARD})
 
 IF(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
     OPTION(ENABLE_BUILD_WITH_TIME_TRACE "Enable -ftime-trace to generate time tracing .json files on clang" OFF)
