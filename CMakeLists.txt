@@ -14,6 +14,7 @@ ELSE()
     SET(CMAKE_CXX_STANDARD ${CXX_STANDARD})
 ENDIF()
 MESSAGE("Using C++ standard ${CMAKE_CXX_STANDARD}")
+INCLUDE(cmake/Options.cmake)
 
 EXECUTE_PROCESS(
         COMMAND git log -1 --format=%h
@@ -67,11 +68,6 @@ ENABLE_DOXYGEN()
 # allow for static analysis options
 INCLUDE(cmake/StaticAnalyzers.cmake)
 
-OPTION(BUILD_SHARED_LIBS "Enable compilation of shared libraries" OFF)
-OPTION(ENABLE_TESTING "Enable Test Builds" ON)
-
-# Very basic PCH example
-OPTION(ENABLE_PCH "Enable Precompiled Headers" OFF)
 IF(ENABLE_PCH)
     # This sets a global PCH parameter, each project will build its own PCH, which is a good idea if any #define's change
     #
@@ -86,6 +82,10 @@ ENDIF()
 # Set up some extra Conan dependencies based on our needs before loading Conan
 SET(CONAN_EXTRA_REQUIRES "")
 SET(CONAN_EXTRA_OPTIONS "")
+
+IF(ENABLE_FMT)
+    ADD_COMPILE_DEFINITIONS(USE_FMT)
+ENDIF()
 
 INCLUDE(cmake/Conan.cmake)
 RUN_CONAN()

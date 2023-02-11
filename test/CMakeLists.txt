@@ -29,7 +29,7 @@ CATCH_DISCOVER_TESTS(
         TEST_PREFIX
         "unittests."
         REPORTER
-        xml
+        JUnit
         OUTPUT_DIR
         .
         OUTPUT_PREFIX

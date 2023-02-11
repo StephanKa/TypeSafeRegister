@@ -17,7 +17,8 @@
         "ENABLE_SANITIZER_ADDRESS": "ON",
         "ENABLE_SANITIZER_LEAK": "ON",
         "ENABLE_SANITIZER_UNDEFINED_BEHAVIOR": "ON",
-        "ENABLE_SANITIZER_MEMORY": "ON"
+        "ENABLE_SANITIZER_MEMORY": "ON",
+        "ENABLE_FMT": "ON"
       }
     },
     {
