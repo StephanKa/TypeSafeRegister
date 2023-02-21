@@ -6,9 +6,11 @@ CONFIGURE_FILE(../../templates/generator/generateDefinition.py.in generateDefini
 ADD_EXECUTABLE(${PROJECT_NAME} main.cpp)
 TARGET_LINK_LIBRARIES(${PROJECT_NAME}
                       PRIVATE project_options
-                      project_warnings
-                      CONAN_PKG::fmt
-                      CONAN_PKG::spdlog)
+                      project_warnings)
+IF(ENABLE_FMT)
+    TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE CONAN_PKG::fmt)
+ENDIF()
+
 TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated ../../include ${CMAKE_CURRENT_BINARY_DIR}/../../generated)
 
 ADD_CUSTOM_TARGET(${PROJECT_NAME}_Generation
