@@ -14,6 +14,7 @@ ELSE()
     SET(CMAKE_CXX_STANDARD ${CXX_STANDARD})
 ENDIF()
 MESSAGE("Using C++ standard ${CMAKE_CXX_STANDARD}")
+
 INCLUDE(cmake/Options.cmake)
 
 EXECUTE_PROCESS(

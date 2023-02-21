@@ -12,16 +12,34 @@
 struct READONLY
 {
 };
+
 struct WRITEONLY
 {
 };
+
 struct READWRITE
   : public READONLY
   , public WRITEONLY
 {
 };
 
-template<typename T> using is_class_enum = std::integral_constant<bool, std::is_enum_v<T> && !std::is_convertible_v<T, int>>;
+class BitType
+{
+  public:
+    consteval BitType() : type("N/A") {}
+    consteval explicit BitType(const char *data) : type{ data, std::char_traits<char>::length(data) } {}
+
+    std::string_view type;
+};
+
+class BitName
+{
+  public:
+    consteval BitName() : name("Reserved") {}
+    consteval explicit BitName(const char *data) : name{ data, std::char_traits<char>::length(data) } {}
+
+    std::string_view name;
+};
 
 template<typename T>
 concept WriteConcept = std::is_same_v<T, READWRITE> || std::is_same_v<T, WRITEONLY>;
@@ -30,8 +48,7 @@ template<typename T>
 concept ReadConcept = std::is_same_v<T, READWRITE> || std::is_same_v<T, READONLY>;
 
 template<typename T, typename U>
-concept NotSameType = !
-                      std::is_same_v<T, U> &&std::is_class_v<T> &&std::is_class_v<U>;
+concept NotSameType = !std::is_same_v<T, U> && std::is_class_v<T> && std::is_class_v<U>;
 
 template<typename Type> constexpr auto getMask(std::size_t bitOffset, std::size_t bitWidth)
 {
@@ -86,7 +103,7 @@ template<typename Enum, size_t BitOffset, size_t BitWidth, FixedString Name, typ
 
 struct BitInfo
 {
-    explicit BitInfo(size_t width = 0, std::string_view bitType = "N/A", std::string_view bitName = "Reserved") : bitWidth(width), type(bitType), name(bitName) {}
+    explicit BitInfo(size_t width = 0, BitType bitType = {}, BitName bitName = {}) : bitWidth(width), type(bitType.type), name(bitName.name) {}
     size_t bitWidth;
     std::string_view type;
     std::string_view name;
@@ -115,7 +132,7 @@ template<typename RegisterWidth, std::uint32_t, RegisterWidth ResetValue, typena
 
     void operator|=(RegisterWidth bitMask) { orAssign<RegisterType>(bitMask); }
 
-    template<typename Field> void operator|=(Field field)
+    template<typename Field> void operator|=([[maybe_unused]] Field field)
     {
         static_assert((std::is_same_v<const Field, Fields> || ...), "Bitfield not defined for register");
         static_assert(!std::is_same_v<decltype(field.Type), READONLY>, "bitfield is readonly");
@@ -125,7 +142,7 @@ template<typename RegisterWidth, std::uint32_t, RegisterWidth ResetValue, typena
 
     void operator&=(RegisterWidth bitMask) { andAssign<RegisterType>(bitMask); }
 
-    template<typename Field> void operator&=(Field field)
+    template<typename Field> void operator&=([[maybe_unused]] Field field)
     {
         static_assert((std::is_same_v<const Field, Fields> || ...), "Bitfield not defined for register");
         static_assert(!std::is_same_v<decltype(field.Type), READONLY>, "bitfield is readonly");
