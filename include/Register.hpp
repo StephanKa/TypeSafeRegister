@@ -28,6 +28,9 @@ class BitType
   public:
     consteval BitType() : type("N/A") {}
     consteval explicit BitType(const char *data) : type{ data, std::char_traits<char>::length(data) } {}
+#ifdef USE_FMT
+    explicit BitType(std::string_view data) : type{ data } {}
+#endif
 
     std::string_view type;
 };
@@ -110,7 +113,8 @@ struct BitInfo
 };
 
 #ifdef USE_FMT
-std::map<std::type_index, std::string_view> typeMap = { { typeid(READONLY), "R" }, { typeid(WRITEONLY), "W" }, { typeid(READWRITE), "R/W" } };
+using namespace std::string_view_literals;
+std::map<std::type_index, BitType> typeMap = { { typeid(READONLY), BitType{ "R"sv } }, { typeid(WRITEONLY), BitType{ "W"sv } }, { typeid(READWRITE), BitType{ "R/W"sv } } };
 #endif
 
 // dummy for non embedded access
@@ -169,7 +173,7 @@ template<typename RegisterWidth, std::uint32_t, RegisterWidth ResetValue, typena
             constexpr std::string_view bitContentMultipleWidth = "|{0:^20}{1:^20} | <-- Bit {2} - {3}\n";
             fmt::print("Register name: {:^12}\n", name);
             std::array<BitInfo, std::numeric_limits<RegisterWidth>::digits> bitInfos;
-            std::apply([&](auto &...) { ((bitInfos[Fields::bitOffset] = BitInfo{ Fields::bitWidth, typeMap[typeid(Fields::Type)], Fields::name }), ...); }, bitInfos);
+            std::apply([&](auto &...) { ((bitInfos[Fields::bitOffset] = BitInfo{ Fields::bitWidth, typeMap[typeid(Fields::Type)], BitName{ Fields::name } }), ...); }, bitInfos);
             size_t offset = 0;
             for (auto iter = bitInfos.begin(); iter != bitInfos.end(); iter++, offset++) {
                 fmt::print(horizontalLine, "");

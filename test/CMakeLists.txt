@@ -17,11 +17,7 @@ TARGET_LINK_LIBRARIES(catch_main PRIVATE project_options)
 
 ADD_EXECUTABLE(${PROJECT_NAME} tests.cpp)
 TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated ../include)
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE project_warnings project_options catch_main)
-
-IF(ENABLE_FMT)
-    TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE CONAN_PKG::fmt)
-ENDIF()
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE project_warnings project_options catch_main CONAN_PKG::fmt)
 
 ADD_CUSTOM_TARGET(${PROJECT_NAME}_Generation
                   COMMAND python${Python_VERSION_MAJOR} ${CMAKE_CURRENT_BINARY_DIR}/generateDefinition.py)

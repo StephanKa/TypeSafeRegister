@@ -28,7 +28,8 @@
       "binaryDir": "${sourceDir}/build/release",
       "displayName": "Base preset for release builds",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
+        "CMAKE_BUILD_TYPE": "Release",
+        "ENABLE_FMT": "ON"
       }
     },
     {
