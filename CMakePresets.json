@@ -105,24 +105,6 @@
       }
     },
     {
-      "name": "gcc-10-debug",
-      "inherits": "debug-base",
-      "displayName": "Preset for gcc 10 debug builds",
-      "environment": {
-        "CXX": "g++-10",
-        "CC": "gcc-10"
-      }
-    },
-    {
-      "name": "gcc-10-release",
-      "inherits": "release-base",
-      "displayName": "Preset for gcc 10 release builds",
-      "environment": {
-        "CXX": "g++-10",
-        "CC": "gcc-10"
-      }
-    },
-    {
       "name": "gcc-11-debug",
       "inherits": "debug-base",
       "displayName": "Preset for gcc 11 debug builds",
@@ -168,7 +150,8 @@
         "strategy": "external"
       },
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ENABLE_FMT": "ON"
       }
     },
     {
@@ -181,7 +164,8 @@
         "strategy": "external"
       },
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
+        "CMAKE_BUILD_TYPE": "Release",
+        "ENABLE_FMT": "ON"
       }
     },
     {
@@ -243,14 +227,6 @@
     {
       "name": "clang-15-release",
       "configurePreset": "clang-15-release"
-    },
-    {
-      "name": "gcc-10-debug",
-      "configurePreset": "gcc-10-debug"
-    },
-    {
-      "name": "gcc-10-release",
-      "configurePreset": "gcc-10-release"
     },
     {
       "name": "gcc-11-debug",
@@ -317,14 +293,6 @@
     {
       "name": "clang-15-release",
       "configurePreset": "clang-15-release"
-    },
-    {
-      "name": "gcc-10-debug",
-      "configurePreset": "gcc-10-debug"
-    },
-    {
-      "name": "gcc-10-release",
-      "configurePreset": "gcc-10-release"
     },
     {
       "name": "gcc-11-debug",
