@@ -1,7 +1,9 @@
 #pragma once
+#ifdef USE_FMT
+#include <fmt/format.h>
+#endif
 #include <array>
 #include <cstdint>
-#include <fmt/format.h>
 #include <limits>
 #include <map>
 #include <string_view>
@@ -44,6 +46,7 @@ class BitName
     std::string_view name;
 };
 
+namespace details {
 template<typename T>
 concept WriteConcept = std::is_same_v<T, READWRITE> || std::is_same_v<T, WRITEONLY>;
 
@@ -53,7 +56,7 @@ concept ReadConcept = std::is_same_v<T, READWRITE> || std::is_same_v<T, READONLY
 template<typename T, typename U>
 concept NotSameType = !std::is_same_v<T, U> && std::is_class_v<T> && std::is_class_v<U>;
 
-template<typename Type> constexpr auto getMask(std::size_t bitOffset, std::size_t bitWidth)
+template<typename Type> consteval auto getMask(std::size_t bitOffset, std::size_t bitWidth)
 {
     Type mask = 0u;
     for (std::size_t i = 0; i < bitWidth; i++) { mask |= static_cast<Type>(1 << (bitOffset + i)); }
@@ -63,7 +66,7 @@ template<typename Type> constexpr auto getMask(std::size_t bitOffset, std::size_
 template<unsigned N> struct FixedString
 {
     std::array<char, N + 1> buf{};
-    constexpr FixedString(char const *input)
+    consteval FixedString(char const *input)
     {
         for (unsigned i = 0; i != N; ++i) { buf[i] = input[i]; }
     }
@@ -71,34 +74,41 @@ template<unsigned N> struct FixedString
 };
 template<unsigned N> FixedString(const char (&)[N]) -> FixedString<N - 1>;
 
+#ifdef USE_FMT
+using namespace std::string_view_literals;
+std::map<std::type_index, BitType> typeMap = { { typeid(READONLY), BitType{ "R"sv } }, { typeid(WRITEONLY), BitType{ "W"sv } }, { typeid(READWRITE), BitType{ "R/W"sv } } };
+#endif
+
+}// namespace detail
+
 // for embedded access
-template<typename T, size_t BitOffset, size_t BitWidth, FixedString Name, typename FieldType = READWRITE> struct BitField
+template<typename T, size_t BitOffset, size_t BitWidth, details::FixedString Name, typename FieldType = READWRITE> struct BitField
 {
     static constexpr std::size_t bitOffset = BitOffset;
     static constexpr std::size_t bitWidth = BitWidth;
-    static constexpr std::uint32_t mask = getMask<std::uint32_t>(BitOffset, BitWidth);
+    static constexpr auto mask = details::getMask<std::uint32_t>(BitOffset, BitWidth);
     static constexpr char const *name = Name;
     constexpr static FieldType Type{};
 
     template<typename U>
-        requires NotSameType<T, U>
-    constexpr std::uint32_t operator|(U lhs) const
+        requires details::NotSameType<T, U>
+    consteval auto operator|(U lhs) const
     {
         return mask | lhs.mask;
     }
 
     template<typename U>
-        requires NotSameType<T, U>
-    constexpr std::uint32_t operator&(U lhs) const
+        requires details::NotSameType<T, U>
+    consteval auto operator&(U lhs) const
     {
         return mask & lhs.mask;
     }
 };
 
-template<typename Enum, size_t BitOffset, size_t BitWidth, FixedString Name, typename FieldType = READWRITE> struct EnumeratedField
+template<typename Enum, size_t BitOffset, size_t BitWidth, details::FixedString Name, typename FieldType = READWRITE> struct EnumeratedField
 {
-    static constexpr std::size_t bitOffset = BitOffset;
-    static constexpr std::size_t bitWidth = BitWidth;
+    static constexpr auto bitOffset = BitOffset;
+    static constexpr auto  bitWidth = BitWidth;
     static constexpr char const *name = Name;
     constexpr static FieldType Type{};
     using EnumType = Enum;
@@ -112,13 +122,8 @@ struct BitInfo
     std::string_view name;
 };
 
-#ifdef USE_FMT
-using namespace std::string_view_literals;
-std::map<std::type_index, BitType> typeMap = { { typeid(READONLY), BitType{ "R"sv } }, { typeid(WRITEONLY), BitType{ "W"sv } }, { typeid(READWRITE), BitType{ "R/W"sv } } };
-#endif
-
 // dummy for non embedded access
-template<typename RegisterWidth, std::uint32_t, RegisterWidth ResetValue, typename RegisterType, FixedString Name, typename... Fields> class Register
+template<typename RegisterWidth, std::uint32_t, RegisterWidth ResetValue, typename RegisterType, details::FixedString Name, typename... Fields> class Register
 {
   public:
     Register &operator=(RegisterWidth bitMask) { write<RegisterType>(bitMask); }
@@ -126,7 +131,7 @@ template<typename RegisterWidth, std::uint32_t, RegisterWidth ResetValue, typena
     RegisterWidth operator()(const RegisterWidth mask) const { return read<RegisterType>(mask); }
 
     template<typename Value>
-        requires ReadConcept<RegisterType>
+        requires details::ReadConcept<RegisterType>
     RegisterWidth read() const
     {
         return read<RegisterType>(Value::mask) >> Value::bitOffset;
@@ -167,13 +172,14 @@ template<typename RegisterWidth, std::uint32_t, RegisterWidth ResetValue, typena
     void dump()
     {
 #ifdef USE_FMT
+        using namespace std::string_view_literals;
         if constexpr (sizeof...(Fields) > 0) {
-            constexpr std::string_view horizontalLine = "|{:-^41}|\n";
-            constexpr std::string_view bitContentSingleWidth = "|{0:^20}{1:^20} | <-- Bit {2}\n";
-            constexpr std::string_view bitContentMultipleWidth = "|{0:^20}{1:^20} | <-- Bit {2} - {3}\n";
+            constexpr auto horizontalLine = "|{:-^41}|\n"sv;
+            constexpr auto bitContentSingleWidth = "|{0:^20}{1:^20} | <-- Bit {2}\n"sv;
+            constexpr auto bitContentMultipleWidth = "|{0:^20}{1:^20} | <-- Bit {2} - {3}\n"sv;
             fmt::print("Register name: {:^12}\n", name);
             std::array<BitInfo, std::numeric_limits<RegisterWidth>::digits> bitInfos;
-            std::apply([&](auto &...) { ((bitInfos[Fields::bitOffset] = BitInfo{ Fields::bitWidth, typeMap[typeid(Fields::Type)], BitName{ Fields::name } }), ...); }, bitInfos);
+            std::apply([&](auto &...) { ((bitInfos[Fields::bitOffset] = BitInfo{ Fields::bitWidth, details::typeMap[typeid(Fields::Type)], BitName{ Fields::name } }), ...); }, bitInfos);
             size_t offset = 0;
             for (auto iter = bitInfos.begin(); iter != bitInfos.end(); iter++, offset++) {
                 fmt::print(horizontalLine, "");
@@ -194,17 +200,19 @@ template<typename RegisterWidth, std::uint32_t, RegisterWidth ResetValue, typena
     }
 
   private:
-    template<WriteConcept T> void write(RegisterWidth bitMask) { *rawPtr = bitMask; }
+    template<details::WriteConcept T> void write(RegisterWidth bitMask) { *rawPtr = bitMask; }
 
-    template<ReadConcept T> RegisterWidth read(RegisterWidth mask) const { return *rawPtr & mask; }
-    template<ReadConcept T> RegisterWidth read() const { return *rawPtr; }
+    template<details::ReadConcept T> RegisterWidth read(RegisterWidth mask) const { return *rawPtr & mask; }
+    template<details::ReadConcept T> RegisterWidth read() const { return *rawPtr; }
 
-    template<WriteConcept T> void orAssign(RegisterWidth bitMask) { *rawPtr |= bitMask; }
+    template<details::WriteConcept T> void orAssign(RegisterWidth bitMask) { *rawPtr |= bitMask; }
 
-    template<WriteConcept T> void andAssign(RegisterWidth bitMask) { *rawPtr &= bitMask; }
+    template<details::WriteConcept T> void andAssign(RegisterWidth bitMask) { *rawPtr &= bitMask; }
 
     RegisterWidth raw = { ResetValue };
     RegisterWidth *rawPtr = reinterpret_cast<RegisterWidth *>(&raw);
 
+#ifdef USE_FMT
     static constexpr char const *name = Name;
+#endif
 };
