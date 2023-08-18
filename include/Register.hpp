@@ -56,7 +56,7 @@ concept ReadConcept = std::is_same_v<T, READWRITE> || std::is_same_v<T, READONLY
 template<typename T, typename U>
 concept NotSameType = !std::is_same_v<T, U> && std::is_class_v<T> && std::is_class_v<U>;
 
-template<typename Type> consteval auto getMask(std::size_t bitOffset, std::size_t bitWidth)
+template<typename Type> constexpr auto getMask(std::size_t bitOffset, std::size_t bitWidth)
 {
     Type mask = 0u;
     for (std::size_t i = 0; i < bitWidth; i++) { mask |= static_cast<Type>(1 << (bitOffset + i)); }
