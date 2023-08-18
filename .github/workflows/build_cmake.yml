@@ -41,8 +41,8 @@ jobs:
              sudo apt update
              sudo apt install ninja-build ${{ matrix.compiler.pkgs }}
              python3 -m pip install --upgrade pip setuptools pipenv
-             python3 -m pip install conan==1.58 jsonschema virtualenv ninja
-             python3 -m pip install 'git+https://github.com/posborne/cmsis-svd.git#egg=cmsis-svd&subdirectory=python'
+             python3 -m pip install conan jsonschema virtualenv ninja
+             python3 -m pip install 'git+https://github.com/posborne/cmsis-svd.git#egg=cmsis-svd'
       shell: bash
 
     - name: Install conan
@@ -75,8 +75,8 @@ jobs:
         shell: bash
         run: |
           python3 -m pip install --upgrade pip setuptools
-          python3 -m pip install conan==1.58 jsonschema virtualenv ninja
-          python3 -m pip install -U -e 'git+https://github.com/posborne/cmsis-svd.git#egg=cmsis-svd&subdirectory=python'
+          python3 -m pip install conan jsonschema virtualenv ninja
+          python3 -m pip install -U -e 'git+https://github.com/posborne/cmsis-svd.git#egg=cmsis-svd'
 
       - name: Configure CMake
         shell: bash

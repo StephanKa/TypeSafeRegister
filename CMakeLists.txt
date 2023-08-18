@@ -1,5 +1,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.19)
 
+INCLUDE(cmake/Conan.cmake)
+
 IF(NOT DEFINED ${CHIP_MANUFACTURER})
     SET(CHIP_MANUFACTURER STMicro)
 ENDIF()
@@ -29,8 +31,8 @@ CONFIGURE_FILE("templates/version.hpp.in" "${CMAKE_BINARY_DIR}/generated/include
 FIND_PACKAGE(Python COMPONENTS Interpreter REQUIRED)
 
 # install PyPI Python package using pip
-EXECUTE_PROCESS(COMMAND ${Python_EXECUTABLE} -m pip install --user --upgrade pip setuptools jinja2 conan==1.58)
-EXECUTE_PROCESS(COMMAND ${Python_EXECUTABLE} -m pip install --user -e "git+https://github.com/posborne/cmsis-svd.git#egg=cmsis-svd&subdirectory=python")
+EXECUTE_PROCESS(COMMAND ${Python_EXECUTABLE} -m pip install --user --upgrade pip setuptools jinja2 conan)
+EXECUTE_PROCESS(COMMAND ${Python_EXECUTABLE} -m pip install --user -e "git+https://github.com/posborne/cmsis-svd.git#egg=cmsis-svd")
 
 # Set the project name to your project name, my project isn't very descriptive
 PROJECT(TypeSafeRegister CXX)
@@ -80,18 +82,13 @@ IF(ENABLE_PCH)
             <utility>)
 ENDIF()
 
-# Set up some extra Conan dependencies based on our needs before loading Conan
-SET(CONAN_EXTRA_REQUIRES "")
-SET(CONAN_EXTRA_OPTIONS "")
-
 IF(ENABLE_FMT)
     ADD_COMPILE_DEFINITIONS(USE_FMT)
 ENDIF()
 
-INCLUDE(cmake/Conan.cmake)
-RUN_CONAN()
-
 FIND_PACKAGE(Python REQUIRED)
+FIND_PACKAGE(fmt REQUIRED)
+FIND_PACKAGE(Catch2 REQUIRED)
 
 IF(ENABLE_TESTING)
     ENABLE_TESTING()
