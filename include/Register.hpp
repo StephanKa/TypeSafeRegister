@@ -25,9 +25,8 @@ struct READWRITE
 {
 };
 
-class BitType
+struct BitType
 {
-  public:
     consteval BitType() : type("N/A") {}
     consteval explicit BitType(const char *data) : type{ data, std::char_traits<char>::length(data) } {}
 #ifdef USE_FMT
@@ -37,9 +36,8 @@ class BitType
     std::string_view type;
 };
 
-class BitName
+struct BitName
 {
-  public:
     consteval BitName() : name("Reserved") {}
     consteval explicit BitName(const char *data) : name{ data, std::char_traits<char>::length(data) } {}
 
@@ -56,7 +54,7 @@ concept ReadConcept = std::is_same_v<T, READWRITE> || std::is_same_v<T, READONLY
 template<typename T, typename U>
 concept NotSameType = !std::is_same_v<T, U> && std::is_class_v<T> && std::is_class_v<U>;
 
-template<typename Type> constexpr auto getMask(std::size_t bitOffset, std::size_t bitWidth)
+template<typename Type> [[nodiscard]] constexpr auto getMask(std::size_t bitOffset, std::size_t bitWidth)
 {
     Type mask = 0u;
     for (std::size_t i = 0; i < bitWidth; i++) { mask |= static_cast<Type>(1 << (bitOffset + i)); }
@@ -70,7 +68,7 @@ template<unsigned N> struct FixedString
     {
         for (unsigned i = 0; i != N; ++i) { buf[i] = input[i]; }
     }
-    constexpr operator char const *() const { return buf.data(); }
+    [[nodiscard]] constexpr operator char const *() const { return buf.data(); }
 };
 template<unsigned N> FixedString(const char (&)[N]) -> FixedString<N - 1>;
 
@@ -132,12 +130,12 @@ template<typename RegisterWidth, std::uint32_t, RegisterWidth ResetValue, typena
 
     template<typename Value>
         requires details::ReadConcept<RegisterType>
-    RegisterWidth read() const
+    [[nodiscard]] RegisterWidth read() const
     {
         return read<RegisterType>(Value::mask) >> Value::bitOffset;
     }
 
-    RegisterWidth operator()() const { return read<RegisterType>(std::numeric_limits<int>::max()); }
+    [[nodiscard]] RegisterWidth operator()() const { return read<RegisterType>(std::numeric_limits<int>::max()); }
 
     void operator|=(RegisterWidth bitMask) { orAssign<RegisterType>(bitMask); }
 
