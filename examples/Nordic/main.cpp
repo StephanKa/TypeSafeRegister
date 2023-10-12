@@ -1,6 +1,6 @@
+#include "include/version.hpp"
 #include <TIMER0_S.hpp>
 #include <fmt/format.h>
-#include "include/version.hpp"
 
 int main()
 {
@@ -10,6 +10,10 @@ int main()
     fmt::print(R"(major: {}
 minor: {}
 patch: {}
-Githash: {})", SoftwareVersion::Major, SoftwareVersion::Minor, SoftwareVersion::Patch, SoftwareVersion::GitHash);
+Githash: {})",
+      SoftwareVersion::Major,
+      SoftwareVersion::Minor,
+      SoftwareVersion::Patch,
+      SoftwareVersion::GitHash);
     return 0;
 }

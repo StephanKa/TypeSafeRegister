@@ -3,7 +3,10 @@
 #include <catch2/catch_all.hpp>
 
 
-TEST_CASE("Test initial DCMI value", "Initial instance DCMI") { REQUIRE(DCMI::DR() == 0u); }
+TEST_CASE("Test initial DCMI value", "Initial instance DCMI")
+{
+    REQUIRE(DCMI::DR() == 0u);
+}
 
 TEST_CASE("Test set CWSIZE with CAPCNT", "CWSIZE set CAPCNT")
 {

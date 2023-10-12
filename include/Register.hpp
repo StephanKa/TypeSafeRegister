@@ -27,10 +27,13 @@ struct READWRITE
 
 struct BitType
 {
-    consteval BitType() : type("N/A") {}
-    consteval explicit BitType(const char *data) : type{ data, std::char_traits<char>::length(data) } {}
+    consteval BitType() : type("N/A")
+    {}
+    consteval explicit BitType(const char *data) : type{ data, std::char_traits<char>::length(data) }
+    {}
 #ifdef USE_FMT
-    explicit BitType(std::string_view data) : type{ data } {}
+    explicit BitType(std::string_view data) : type{ data }
+    {}
 #endif
 
     std::string_view type;
@@ -38,8 +41,10 @@ struct BitType
 
 struct BitName
 {
-    consteval BitName() : name("Reserved") {}
-    consteval explicit BitName(const char *data) : name{ data, std::char_traits<char>::length(data) } {}
+    consteval BitName() : name("Reserved")
+    {}
+    consteval explicit BitName(const char *data) : name{ data, std::char_traits<char>::length(data) }
+    {}
 
     std::string_view name;
 };
@@ -54,33 +59,46 @@ concept ReadConcept = std::is_same_v<T, READWRITE> || std::is_same_v<T, READONLY
 template<typename T, typename U>
 concept NotSameType = !std::is_same_v<T, U> && std::is_class_v<T> && std::is_class_v<U>;
 
-template<typename Type> [[nodiscard]] constexpr auto getMask(std::size_t bitOffset, std::size_t bitWidth)
+template<typename Type>
+[[nodiscard]] constexpr auto getMask(std::size_t bitOffset, std::size_t bitWidth)
 {
     Type mask = 0u;
-    for (std::size_t i = 0; i < bitWidth; i++) { mask |= static_cast<Type>(1 << (bitOffset + i)); }
+    for (std::size_t i = 0; i < bitWidth; i++) {
+        mask |= static_cast<Type>(1 << (bitOffset + i));
+    }
     return mask;
 }
 
-template<unsigned N> struct FixedString
+template<unsigned N>
+struct FixedString
 {
     std::array<char, N + 1> buf{};
     consteval FixedString(char const *input)
     {
-        for (unsigned i = 0; i != N; ++i) { buf[i] = input[i]; }
+        for (unsigned i = 0; i != N; ++i) {
+            buf[i] = input[i];
+        }
     }
-    [[nodiscard]] constexpr operator char const *() const { return buf.data(); }
+    [[nodiscard]] constexpr operator char const *() const
+    {
+        return buf.data();
+    }
 };
-template<unsigned N> FixedString(const char (&)[N]) -> FixedString<N - 1>;
+template<unsigned N>
+FixedString(const char (&)[N]) -> FixedString<N - 1>;
 
 #ifdef USE_FMT
 using namespace std::string_view_literals;
-std::map<std::type_index, BitType> typeMap = { { typeid(READONLY), BitType{ "R"sv } }, { typeid(WRITEONLY), BitType{ "W"sv } }, { typeid(READWRITE), BitType{ "R/W"sv } } };
+static std::map<std::type_index, BitType> typeMap = { { typeid(READONLY), BitType{ "R"sv } },
+    { typeid(WRITEONLY), BitType{ "W"sv } },
+    { typeid(READWRITE), BitType{ "R/W"sv } } };
 #endif
 
-}// namespace detail
+}// namespace details
 
 // for embedded access
-template<typename T, size_t BitOffset, size_t BitWidth, details::FixedString Name, typename FieldType = READWRITE> struct BitField
+template<typename T, size_t BitOffset, size_t BitWidth, details::FixedString Name, typename FieldType = READWRITE>
+struct BitField
 {
     static constexpr std::size_t bitOffset = BitOffset;
     static constexpr std::size_t bitWidth = BitWidth;
@@ -103,10 +121,11 @@ template<typename T, size_t BitOffset, size_t BitWidth, details::FixedString Nam
     }
 };
 
-template<typename Enum, size_t BitOffset, size_t BitWidth, details::FixedString Name, typename FieldType = READWRITE> struct EnumeratedField
+template<typename Enum, size_t BitOffset, size_t BitWidth, details::FixedString Name, typename FieldType = READWRITE>
+struct EnumeratedField
 {
     static constexpr auto bitOffset = BitOffset;
-    static constexpr auto  bitWidth = BitWidth;
+    static constexpr auto bitWidth = BitWidth;
     static constexpr char const *name = Name;
     constexpr static FieldType Type{};
     using EnumType = Enum;
@@ -114,19 +133,27 @@ template<typename Enum, size_t BitOffset, size_t BitWidth, details::FixedString 
 
 struct BitInfo
 {
-    explicit BitInfo(size_t width = 0, BitType bitType = {}, BitName bitName = {}) : bitWidth(width), type(bitType.type), name(bitName.name) {}
+    explicit BitInfo(size_t width = 0, BitType bitType = {}, BitName bitName = {}) : bitWidth(width), type(bitType.type), name(bitName.name)
+    {}
     size_t bitWidth;
     std::string_view type;
     std::string_view name;
 };
 
 // dummy for non embedded access
-template<typename RegisterWidth, std::uint32_t, RegisterWidth ResetValue, typename RegisterType, details::FixedString Name, typename... Fields> class Register
+template<typename RegisterWidth, std::uintptr_t BaseAddress, RegisterWidth ResetValue, typename RegisterType, details::FixedString Name, typename... Fields>
+class Register
 {
   public:
-    Register &operator=(RegisterWidth bitMask) { write<RegisterType>(bitMask); }
+    Register &operator=(RegisterWidth bitMask)
+    {
+        write<RegisterType>(bitMask);
+    }
 
-    RegisterWidth operator()(const RegisterWidth mask) const { return read<RegisterType>(mask); }
+    RegisterWidth operator()(const RegisterWidth mask) const
+    {
+        return read<RegisterType>(mask);
+    }
 
     template<typename Value>
         requires details::ReadConcept<RegisterType>
@@ -135,11 +162,18 @@ template<typename RegisterWidth, std::uint32_t, RegisterWidth ResetValue, typena
         return read<RegisterType>(Value::mask) >> Value::bitOffset;
     }
 
-    [[nodiscard]] RegisterWidth operator()() const { return read<RegisterType>(std::numeric_limits<int>::max()); }
+    [[nodiscard]] RegisterWidth operator()() const
+    {
+        return read<RegisterType>(std::numeric_limits<int>::max());
+    }
 
-    void operator|=(RegisterWidth bitMask) { orAssign<RegisterType>(bitMask); }
+    void operator|=(RegisterWidth bitMask)
+    {
+        orAssign<RegisterType>(bitMask);
+    }
 
-    template<typename Field> void operator|=([[maybe_unused]] Field field)
+    template<typename Field>
+    void operator|=([[maybe_unused]] Field field)
     {
         static_assert((std::is_same_v<const Field, Fields> || ...), "Bitfield not defined for register");
         static_assert(!std::is_same_v<decltype(field.Type), READONLY>, "bitfield is readonly");
@@ -147,9 +181,13 @@ template<typename RegisterWidth, std::uint32_t, RegisterWidth ResetValue, typena
         orAssign<RegisterType>(static_cast<RegisterWidth>(Field::mask));
     }
 
-    void operator&=(RegisterWidth bitMask) { andAssign<RegisterType>(bitMask); }
+    void operator&=(RegisterWidth bitMask)
+    {
+        andAssign<RegisterType>(bitMask);
+    }
 
-    template<typename Field> void operator&=([[maybe_unused]] Field field)
+    template<typename Field>
+    void operator&=([[maybe_unused]] Field field)
     {
         static_assert((std::is_same_v<const Field, Fields> || ...), "Bitfield not defined for register");
         static_assert(!std::is_same_v<decltype(field.Type), READONLY>, "bitfield is readonly");
@@ -157,7 +195,8 @@ template<typename RegisterWidth, std::uint32_t, RegisterWidth ResetValue, typena
         orAssign<RegisterType>(static_cast<RegisterWidth>(Field::mask));
     }
 
-    template<typename Field> void write(Field field, RegisterWidth value)
+    template<typename Field>
+    void write(Field field, RegisterWidth value)
     {
         static_assert((std::is_same_v<const Field, Fields> || ...), "Bitfield not defined for register");
         static_assert(!std::is_same_v<decltype(field.Type), READONLY>, "bitfield is readonly");
@@ -165,7 +204,10 @@ template<typename RegisterWidth, std::uint32_t, RegisterWidth ResetValue, typena
         orAssign<RegisterType>(static_cast<RegisterWidth>((value << field.bitOffset) & field.mask));
     }
 
-    void reset() { raw = ResetValue; }
+    void reset()
+    {
+        raw = ResetValue;
+    }
 
     void dump()
     {
@@ -177,7 +219,11 @@ template<typename RegisterWidth, std::uint32_t, RegisterWidth ResetValue, typena
             constexpr auto bitContentMultipleWidth = "|{0:^20}{1:^20} | <-- Bit {2} - {3}\n"sv;
             fmt::print("Register name: {:^12}\n", name);
             std::array<BitInfo, std::numeric_limits<RegisterWidth>::digits> bitInfos;
-            std::apply([&](auto &...) { ((bitInfos[Fields::bitOffset] = BitInfo{ Fields::bitWidth, details::typeMap[typeid(Fields::Type)], BitName{ Fields::name } }), ...); }, bitInfos);
+            std::apply(
+              [&](auto &...) {
+                  ((bitInfos[Fields::bitOffset] = BitInfo{ Fields::bitWidth, details::typeMap[typeid(Fields::Type)], BitName{ Fields::name } }), ...);
+              },
+              bitInfos);
             size_t offset = 0;
             for (auto iter = bitInfos.begin(); iter != bitInfos.end(); iter++, offset++) {
                 fmt::print(horizontalLine, "");
@@ -198,14 +244,34 @@ template<typename RegisterWidth, std::uint32_t, RegisterWidth ResetValue, typena
     }
 
   private:
-    template<details::WriteConcept T> void write(RegisterWidth bitMask) { *rawPtr = bitMask; }
+    template<details::WriteConcept T>
+    void write(RegisterWidth bitMask)
+    {
+        *rawPtr = bitMask;
+    }
 
-    template<details::ReadConcept T> RegisterWidth read(RegisterWidth mask) const { return *rawPtr & mask; }
-    template<details::ReadConcept T> RegisterWidth read() const { return *rawPtr; }
+    template<details::ReadConcept T>
+    RegisterWidth read(RegisterWidth mask) const
+    {
+        return *rawPtr & mask;
+    }
+    template<details::ReadConcept T>
+    RegisterWidth read() const
+    {
+        return *rawPtr;
+    }
 
-    template<details::WriteConcept T> void orAssign(RegisterWidth bitMask) { *rawPtr |= bitMask; }
+    template<details::WriteConcept T>
+    void orAssign(RegisterWidth bitMask)
+    {
+        *rawPtr |= bitMask;
+    }
 
-    template<details::WriteConcept T> void andAssign(RegisterWidth bitMask) { *rawPtr &= bitMask; }
+    template<details::WriteConcept T>
+    void andAssign(RegisterWidth bitMask)
+    {
+        *rawPtr &= bitMask;
+    }
 
     RegisterWidth raw = { ResetValue };
     RegisterWidth *rawPtr = reinterpret_cast<RegisterWidth *>(&raw);
