@@ -7,7 +7,7 @@ if __name__ == '__main__':
     file_loader = FileSystemLoader('@TEMPLATE_FOLDER_PATH@')
     env = Environment(loader=file_loader)
 
-    parser = SVDParser.for_packaged_svd(f'{os.getcwd()}/../../../../src/cmsis-svd/data/', '@CHIP_MANUFACTURER@', '@CHIP_FAMILY@')
+    parser = SVDParser.for_packaged_svd(f'{os.getcwd()}/../../src/cmsis-svd/data/', '@CHIP_MANUFACTURER@', '@CHIP_FAMILY@')
 
     peripherals = parser.get_device().peripherals
     peripherals = sorted(peripherals, key=lambda x: x.base_address)
