@@ -8,6 +8,20 @@ env:  # Conan cache environment variables
   CONAN_USER_HOME_SHORT: "${{ github.workspace }}/conan-cache/short"
 
 jobs:
+  docker:
+    name: Test docker images
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build docker-ci image
+        shell: bash
+        run: cd docker && ./build-ci-image.sh
+
+      - name: Build docker-dev image
+        shell: bash
+        run: cd docker && ./build-dev-image.sh
+
   linux:
     name: ${{ matrix.os }}, ${{ matrix.compiler.name }}, ${{ matrix.buildtype }}
     runs-on: ${{ matrix.os }}

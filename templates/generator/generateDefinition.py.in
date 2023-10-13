@@ -7,7 +7,7 @@ if __name__ == '__main__':
     file_loader = FileSystemLoader('@TEMPLATE_FOLDER_PATH@')
     env = Environment(loader=file_loader)
 
-    for root, subdirs, files in os.walk(f'{os.getcwd()}/../../src/'):
+    for root, subdirs, files in os.walk(f'{os.getcwd()}/../../'):
         for filename in files:
             file_path = os.path.join(root, filename)
             print(file_path)
