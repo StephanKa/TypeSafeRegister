@@ -1,3 +1,6 @@
+FIND_PACKAGE(fmt REQUIRED)
+FIND_PACKAGE(Catch2 REQUIRED)
+
 INCLUDE(CTest)
 INCLUDE(Catch)
 
@@ -8,7 +11,8 @@ CONFIGURE_FILE(../templates/generator/generateDefinition.py.in generateDefinitio
 
 ADD_EXECUTABLE(${PROJECT_NAME} tests.cpp)
 TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated ../include)
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE project_warnings project_options Catch2::Catch2WithMain fmt::fmt)
+
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE project_warnings project_options Catch2::Catch2WithMain fmt::fmt-header-only)
 
 ADD_CUSTOM_TARGET(${PROJECT_NAME}_Generation
                   COMMAND python${Python_VERSION_MAJOR} ${CMAKE_CURRENT_BINARY_DIR}/generateDefinition.py)

@@ -1,3 +1,5 @@
+FIND_PACKAGE(fmt REQUIRED)
+
 SET(PROJECT_NAME NordicExample)
 
 IF(NOT DEFINED ${CHIP_MANUFACTURER})
@@ -15,7 +17,7 @@ ADD_EXECUTABLE(${PROJECT_NAME} main.cpp)
 TARGET_LINK_LIBRARIES(${PROJECT_NAME}
                       PRIVATE project_options
                       project_warnings
-                      fmt::fmt)
+                      fmt::fmt-header-only)
 
 MESSAGE(${CMAKE_CURRENT_BINARY_DIR})
 TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated ../../include ${CMAKE_CURRENT_BINARY_DIR}/../../generated)
