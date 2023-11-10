@@ -28,7 +28,7 @@ FUNCTION(SET_PROJECT_WARNINGS project_name)
         /w14906 # string literal cast to 'LPWSTR'
         /w14928 # illegal copy-initialization; more than one user-defined conversion has been implicitly applied
         /permissive- # standards conformance mode for MSVC compiler.
-        )
+    )
 
     SET(CLANG_WARNINGS
         -Wall
@@ -46,11 +46,11 @@ FUNCTION(SET_PROJECT_WARNINGS project_name)
         -Wnull-dereference # warn if a null dereference is detected
         -Wdouble-promotion # warn if float is implicit promoted to double
         -Wformat=2 # warn on security issues around functions that format output (ie printf)
-        )
+    )
 
     IF(WARNINGS_AS_ERRORS)
         SET(CLANG_WARNINGS ${CLANG_WARNINGS} -Werror)
-        #set(MSVC_WARNINGS ${MSVC_WARNINGS} /WX)
+        SET(MSVC_WARNINGS ${MSVC_WARNINGS} /WX)
     ENDIF()
 
     SET(GCC_WARNINGS
@@ -60,7 +60,7 @@ FUNCTION(SET_PROJECT_WARNINGS project_name)
         -Wduplicated-branches # warn if if / else branches have duplicated code
         -Wlogical-op # warn about logical operations being used where bitwise were probably wanted
         -Wuseless-cast # warn if you perform a cast to the same type
-        )
+    )
 
     IF(MSVC)
         SET(PROJECT_WARNINGS ${MSVC_WARNINGS})

@@ -17,8 +17,6 @@ ENDIF()
 # Generate compile_commands.json to make it easier to work with clang based tools
 SET(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-OPTION(ENABLE_IPO "Enable Interprocedural Optimization, aka Link Time Optimization (LTO)" OFF)
-
 IF(ENABLE_IPO)
     INCLUDE(CheckIPOSupported)
     CHECK_IPO_SUPPORTED(
@@ -32,6 +30,7 @@ IF(ENABLE_IPO)
         MESSAGE(SEND_ERROR "IPO is not supported: ${output}")
     ENDIF()
 ENDIF()
+
 IF(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
     ADD_COMPILE_OPTIONS(-fcolor-diagnostics)
 ELSEIF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -40,3 +39,9 @@ ELSE()
     MESSAGE(STATUS "No colored compiler diagnostic set for '${CMAKE_CXX_COMPILER_ID}' compiler.")
 ENDIF()
 
+IF(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    SET(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+ELSE()
+    SET(CMAKE_CXX_FLAGS_DEBUG "-g")
+    SET(CMAKE_CXX_FLAGS_RELEASE "-O2")
+ENDIF()

@@ -1,0 +1,10 @@
+{
+    "version": 4,
+    "vendor": {
+        "conan": {}
+    },
+    "include": [
+        "/mnt/c/Users/stek/Desktop/Privat/_coding/Gitea/TypeSafeRegister/build/release/conan/CMakePresets.json",
+        "/mnt/c/Users/stek/Desktop/Privat/_coding/Gitea/TypeSafeRegister/build/debug/gcc-arm-debug/conan/CMakePresets.json"
+    ]
+}

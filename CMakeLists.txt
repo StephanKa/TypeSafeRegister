@@ -18,6 +18,7 @@ ENDIF()
 MESSAGE("Using C++ standard ${CMAKE_CXX_STANDARD}")
 
 INCLUDE(cmake/Options.cmake)
+INCLUDE(cmake/CodeFormat.cmake)
 
 EXECUTE_PROCESS(
         COMMAND git log -1 --format=%h
@@ -88,6 +89,14 @@ ENDIF()
 
 FIND_PACKAGE(Python REQUIRED)
 FIND_PACKAGE(fmt REQUIRED)
+
+ADD_SUBDIRECTORY(examples)
+
+IF(CMAKE_CROSSCOMPILING)
+    MESSAGE("Test are not built for GCC ARM toolchain!")
+    RETURN()
+ENDIF()
+
 FIND_PACKAGE(Catch2 REQUIRED)
 
 IF(ENABLE_TESTING)
@@ -95,5 +104,3 @@ IF(ENABLE_TESTING)
     MESSAGE("Building Tests.")
     ADD_SUBDIRECTORY(test)
 ENDIF()
-
-ADD_SUBDIRECTORY(examples)

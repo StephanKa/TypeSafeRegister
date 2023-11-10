@@ -195,6 +195,32 @@
         "CMAKE_BUILD_TYPE": "Release",
         "ENABLE_FMT": "ON"
       }
+    },
+    {
+      "name": "gcc-arm-debug",
+      "generator": "Ninja",
+      "toolchainFile": "${sourceDir}/cmake/arm-cortex-gnu/ArmCortexM4Gnu.cmake",
+      "binaryDir": "${sourceDir}/build/debug/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_SYSTEM_NAME": "Linux",
+        "CMAKE_SYSTEM_PROCESSOR": "armv7l",
+        "CMAKE_TRY_COMPILE_TARGET_TYPE": "STATIC_LIBRARY",
+        "CMAKE_CROSSCOMPILING": "TRUE"
+      }
+    },
+    {
+      "name": "gcc-arm-release",
+      "generator": "Ninja",
+      "toolchainFile": "${sourceDir}/cmake/arm-cortex-gnu/ArmCortexM4Gnu.cmake",
+      "binaryDir": "${sourceDir}/build/release/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_SYSTEM_NAME": "Linux",
+        "CMAKE_SYSTEM_PROCESSOR": "armv7l",
+        "CMAKE_TRY_COMPILE_TARGET_TYPE": "STATIC_LIBRARY",
+        "CMAKE_CROSSCOMPILING": "TRUE"
+      }
     }
   ],
   "buildPresets": [
@@ -261,6 +287,14 @@
     {
       "name": "windows-2022-release",
       "configurePreset": "windows-2022-release"
+    },
+    {
+      "name": "gcc-arm-debug",
+      "configurePreset": "gcc-arm-debug"
+    },
+    {
+      "name": "gcc-arm-release",
+      "configurePreset": "gcc-arm-release"
     }
   ],
   "testPresets": [
