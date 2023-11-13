@@ -8,7 +8,7 @@ if __name__ == '__main__':
     env = Environment(loader=file_loader)
 
     SVD_DATA_DIR = "..."
-    parser = SVDParser.for_packaged_svd('@CHIP_MANUFACTURER@', '@CHIP_FAMILY@')
+    parser = SVDParser.for_packaged_svd('@CMAKE_BINARY_DIR@/src/cmsis-svd/data', '@CHIP_MANUFACTURER@', '@CHIP_FAMILY@')
 
     peripherals = parser.get_device().peripherals
     peripherals = sorted(peripherals, key=lambda x: x.base_address)
