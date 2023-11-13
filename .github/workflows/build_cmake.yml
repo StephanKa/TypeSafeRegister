@@ -32,10 +32,9 @@ jobs:
         buildtype: [debug, release]
         compiler: [ {name: 'GCC 11', preset: gcc-11, pkgs: 'gcc-11 g++-11 lib32gcc-11-dev gcc-multilib'},
                     {name: 'GCC 12', preset: gcc-12, pkgs: 'gcc-12 g++-12 lib32gcc-12-dev gcc-multilib'},
-                    {name: 'Clang 12', preset: clang-12, pkgs: 'clang-12 llvm-12'},
-                    {name: 'Clang 13', preset: clang-13, pkgs: 'clang-13 llvm-13'},
-                    {name: 'Clang 14', preset: clang-14, pkgs: 'clang-14 llvm-14'},
-                    {name: 'Clang 15', preset: clang-15, pkgs: 'clang-15 llvm-15'}
+                    {name: 'Clang 15', preset: clang-15, version: '15'},
+                    {name: 'Clang 16', preset: clang-16, version: '16'},
+                    {name: 'Clang 17', preset: clang-17, version: '17'}
                   ]
     steps:
     - uses: actions/checkout@v2
@@ -53,14 +52,23 @@ jobs:
     - name: Install LLVM dependencies
       if: ${{ startsWith(matrix.compiler.name, 'Clang') }}
       run:   |
+             sudo apt update
+             sudo apt install ninja-build
              sudo apt-get purge --auto-remove llvm python3-lldb-14 llvm-14 # https://github.com/llvm/llvm-project/issues/64182
-             sudo bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
+             wget https://apt.llvm.org/llvm.sh
+             sudo chmod -x llvm.sh
+             sudo bash llvm.sh ${{ matrix.compiler.version }}
       shell: bash
 
     - name: Install dependencies
+      if: ${{ startsWith(matrix.compiler.name, 'GCC') }}
       run:   |
              sudo apt update
              sudo apt install ninja-build ${{ matrix.compiler.pkgs }}
+      shell: bash
+
+    - name: Install python dependencies
+      run:   |
              python3 -m pip install --upgrade pip setuptools pipenv
              python3 -m pip install conan jsonschema virtualenv ninja
              python3 -m pip install 'git+https://github.com/posborne/cmsis-svd.git#egg=cmsis-svd&subdirectory=python'
