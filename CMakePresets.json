@@ -10,26 +10,29 @@
       "name": "debug-base",
       "hidden": true,
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/debug",
+      "binaryDir": "${sourceDir}/build/debug/${presetName}",
       "displayName": "Base preset for debug builds",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
+        "ENABLE_COVERAGE": "ON",
         "ENABLE_SANITIZER_ADDRESS": "ON",
         "ENABLE_SANITIZER_LEAK": "ON",
         "ENABLE_SANITIZER_UNDEFINED_BEHAVIOR": "ON",
-        "ENABLE_SANITIZER_MEMORY": "ON",
-        "ENABLE_FMT": "ON"
+        "ENABLE_SANITIZER_MEMORY": "OFF",
+        "ENABLE_FMT": "ON",
       }
     },
     {
       "name": "release-base",
       "hidden": true,
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/release",
+      "binaryDir": "${sourceDir}/build/release/${presetName}",
       "displayName": "Base preset for release builds",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "ENABLE_FMT": "ON"
+        "ENABLE_FMT": "ON",
+        "ENABLE_FILE_PERSISTENCE": "ON",
+        "ENABLE_PYBIND11": "ON"
       }
     },
     {
@@ -105,6 +108,60 @@
       }
     },
     {
+      "name": "clang-16-debug",
+      "inherits": "debug-base",
+      "displayName": "Preset for clang 16 debug build",
+      "environment": {
+        "CXX": "clang++-16",
+        "CC": "clang-16"
+      }
+    },
+    {
+      "name": "clang-16-release",
+      "inherits": "release-base",
+      "displayName": "Preset for clang 16 release build",
+      "environment": {
+        "CXX": "clang++-16",
+        "CC": "clang-16"
+      }
+    },
+    {
+      "name": "clang-17-debug",
+      "inherits": "debug-base",
+      "displayName": "Preset for clang 17 debug build",
+      "environment": {
+        "CXX": "clang++-17",
+        "CC": "clang-17"
+      }
+    },
+    {
+      "name": "clang-17-release",
+      "inherits": "release-base",
+      "displayName": "Preset for clang 17 release build",
+      "environment": {
+        "CXX": "clang++-17",
+        "CC": "clang-17"
+      }
+    },
+    {
+      "name": "gcc-10-debug",
+      "inherits": "debug-base",
+      "displayName": "Preset for gcc 10 debug builds",
+      "environment": {
+        "CXX": "g++-10",
+        "CC": "gcc-10"
+      }
+    },
+    {
+      "name": "gcc-10-release",
+      "inherits": "release-base",
+      "displayName": "Preset for gcc 10 release builds",
+      "environment": {
+        "CXX": "g++-10",
+        "CC": "gcc-10"
+      }
+    },
+    {
       "name": "gcc-11-debug",
       "inherits": "debug-base",
       "displayName": "Preset for gcc 11 debug builds",
@@ -144,56 +201,119 @@
       "name": "windows-2019-debug",
       "displayName": "Windows x64 Debug",
       "generator": "Visual Studio 16 2019",
-      "binaryDir": "${sourceDir}/build/debug",
+      "binaryDir": "${sourceDir}/build/debug/${presetName}",
       "architecture": {
         "value": "x64",
         "strategy": "external"
       },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "ENABLE_FMT": "ON"
+        "ENABLE_FMT": "ON",
+        "ENABLE_FILE_PERSISTENCE": "ON",
+        "ENABLE_PYBIND11": "ON"
       }
     },
     {
       "name": "windows-2019-release",
       "displayName": "Windows x64 release",
       "generator": "Visual Studio 16 2019",
-      "binaryDir": "${sourceDir}/build/debug",
+      "binaryDir": "${sourceDir}/build/release/${presetName}",
       "architecture": {
         "value": "x64",
         "strategy": "external"
       },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "ENABLE_FMT": "ON"
+        "ENABLE_FMT": "ON",
+        "ENABLE_FILE_PERSISTENCE": "ON",
+        "ENABLE_PYBIND11": "ON"
       }
     },
     {
       "name": "windows-2022-debug",
       "displayName": "Windows x64 Debug",
       "generator": "Visual Studio 17 2022",
-      "binaryDir": "${sourceDir}/build/debug",
+      "binaryDir": "${sourceDir}/build/debug/${presetName}",
       "architecture": {
         "value": "x64",
         "strategy": "external"
       },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "ENABLE_FMT": "ON"
+        "ENABLE_FMT": "ON",
+        "ENABLE_FILE_PERSISTENCE": "ON",
+        "ENABLE_PYBIND11": "ON"
       }
     },
     {
       "name": "windows-2022-release",
       "displayName": "Windows x64 release",
       "generator": "Visual Studio 17 2022",
-      "binaryDir": "${sourceDir}/build/debug",
+      "binaryDir": "${sourceDir}/build/release/${presetName}",
       "architecture": {
         "value": "x64",
         "strategy": "external"
       },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "ENABLE_FMT": "ON"
+        "ENABLE_FMT": "ON",
+        "ENABLE_FILE_PERSISTENCE": "ON",
+        "ENABLE_PYBIND11": "ON"
+      }
+    },
+    {
+      "name": "win32-gcc-x64-mingw-debug",
+      "displayName": "Windows GCC x64 (MinGW Makefiles) Debug",
+      "description": "Using GCC x64 compiler with Ninja generator on Windows - Debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/debug/${presetName}",
+      "environment": {
+        "PATH": "C:/msys64/mingw64/bin;$penv{PATH}"
+      },
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc.exe",
+        "CMAKE_CXX_COMPILER": "g++.exe",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ENABLE_FMT": "ON",
+        "ENABLE_FILE_PERSISTENCE": "ON",
+        "ENABLE_PYBIND11": "ON"
+      }
+    },
+    {
+      "name": "win32-gcc-x64-mingw-release",
+      "displayName": "Windows GCC x64 (MinGW Makefiles) Release",
+      "description": "Using GCC x64 compiler with Ninja generator on Windows - Release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/release/${presetName}",
+      "environment": {
+        "PATH": "C:/msys64/mingw64/bin;$penv{PATH}"
+      },
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc.exe",
+        "CMAKE_CXX_COMPILER": "g++.exe",
+        "CMAKE_BUILD_TYPE": "Release",
+        "ENABLE_FMT": "ON",
+        "ENABLE_FILE_PERSISTENCE": "ON",
+        "ENABLE_PYBIND11": "ON"
+      }
+    },
+    {
+      "name": "clang-15-debug-static-analysis",
+      "displayName": "Clang 15 Debug - Static Analysis",
+      "description": "Target Unix-like OS with the Clang 15 compiler, debug build type",
+      "inherits": "clang-15-debug",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang-15",
+        "CMAKE_CXX_COMPILER": "clang++-15",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ENABLE_CPPCHECK": "ON",
+        "ENABLE_CLANG_TIDY": "ON",
+        "ENABLE_INCLUDE_WHAT_YOU_USE": "ON",
+        "ENABLE_COVERAGE": "OFF",
+        "ENABLE_SANITIZER_ADDRESS": "OFF",
+        "ENABLE_SANITIZER_LEAK": "OFF",
+        "ENABLE_SANITIZER_UNDEFINED_BEHAVIOR": "OFF",
+        "ENABLE_SANITIZER_MEMORY": "OFF"
       }
     },
     {
@@ -257,6 +377,30 @@
       "configurePreset": "clang-15-release"
     },
     {
+      "name": "clang-16-debug",
+      "configurePreset": "clang-16-debug"
+    },
+    {
+      "name": "clang-16-release",
+      "configurePreset": "clang-16-release"
+    },
+    {
+      "name": "clang-17-debug",
+      "configurePreset": "clang-17-debug"
+    },
+    {
+      "name": "clang-17-release",
+      "configurePreset": "clang-17-release"
+    },
+    {
+      "name": "gcc-10-debug",
+      "configurePreset": "gcc-10-debug"
+    },
+    {
+      "name": "gcc-10-release",
+      "configurePreset": "gcc-10-release"
+    },
+    {
       "name": "gcc-11-debug",
       "configurePreset": "gcc-11-debug"
     },
@@ -287,6 +431,18 @@
     {
       "name": "windows-2022-release",
       "configurePreset": "windows-2022-release"
+    },
+    {
+      "name": "win32-gcc-x64-mingw-debug",
+      "configurePreset": "win32-gcc-x64-mingw-debug"
+    },
+    {
+      "name": "win32-gcc-x64-mingw-release",
+      "configurePreset": "win32-gcc-x64-mingw-release"
+    },
+    {
+      "name": "clang-15-debug-static-analysis",
+      "configurePreset": "clang-15-debug-static-analysis"
     },
     {
       "name": "gcc-arm-debug",
@@ -331,6 +487,30 @@
       "configurePreset": "clang-15-release"
     },
     {
+      "name": "clang-16-debug",
+      "configurePreset": "clang-16-debug"
+    },
+    {
+      "name": "clang-16-release",
+      "configurePreset": "clang-16-release"
+    },
+    {
+      "name": "clang-17-debug",
+      "configurePreset": "clang-17-debug"
+    },
+    {
+      "name": "clang-17-release",
+      "configurePreset": "clang-17-release"
+    },
+    {
+      "name": "gcc-10-debug",
+      "configurePreset": "gcc-10-debug"
+    },
+    {
+      "name": "gcc-10-release",
+      "configurePreset": "gcc-10-release"
+    },
+    {
       "name": "gcc-11-debug",
       "configurePreset": "gcc-11-debug"
     },
@@ -364,6 +544,16 @@
     {
       "name": "windows-2022-release",
       "configurePreset": "windows-2022-release",
+      "configuration": "Release"
+    },
+    {
+      "name": "win32-gcc-x64-mingw-debug",
+      "configurePreset": "win32-gcc-x64-mingw-debug",
+      "configuration": "Debug"
+    },
+    {
+      "name": "win32-gcc-x64-mingw-release",
+      "configurePreset": "win32-gcc-x64-mingw-release",
       "configuration": "Release"
     }
   ]
