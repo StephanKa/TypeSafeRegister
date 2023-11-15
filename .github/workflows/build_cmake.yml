@@ -12,7 +12,7 @@ jobs:
     name: Test docker images
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Build docker-ci image
         shell: bash
@@ -37,7 +37,7 @@ jobs:
                     {name: 'Clang 17', preset: clang-17, version: '17'}
                   ]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Cache
       uses: actions/cache@v3
@@ -99,7 +99,10 @@ jobs:
         os: [windows-2022, windows-2019]
         buildtype: [debug]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
       - name: Install conan
         shell: bash
         run: |
@@ -130,7 +133,7 @@ jobs:
         compiler: [{name: 'Clang 15', preset: clang-15, pkgs: 'clang-15 llvm-15 llvm-15-dev libclang-15-dev', iwyu_branch: 'clang_15', path_prefix: "/usr/lib/llvm-15"}]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Cache
       uses: actions/cache@v3
@@ -188,7 +191,7 @@ jobs:
         buildtype: [debug, release]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Cache
       uses: actions/cache@v3
