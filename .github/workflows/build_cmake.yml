@@ -16,11 +16,11 @@ jobs:
 
       - name: Build docker-ci image
         shell: bash
-        run: cd docker && ./build-ci-image.sh
+        run: cd docker && sudo ./build-ci-image.sh
 
       - name: Build docker-dev image
         shell: bash
-        run: cd docker && ./build-dev-image.sh
+        run: cd docker && sudo ./build-dev-image.sh
 
   linux:
     name: ${{ matrix.os }}, ${{ matrix.compiler.name }}, ${{ matrix.buildtype }}
@@ -37,10 +37,10 @@ jobs:
                     {name: 'Clang 17', preset: clang-17, version: '17'}
                   ]
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       env:
         cache-name: cache-conan-modules
       with:
