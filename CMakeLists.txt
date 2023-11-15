@@ -35,6 +35,17 @@ FIND_PACKAGE(Python COMPONENTS Interpreter REQUIRED)
 EXECUTE_PROCESS(COMMAND ${Python_EXECUTABLE} -m pip install --user --upgrade pip setuptools jinja2 conan)
 EXECUTE_PROCESS(COMMAND ${Python_EXECUTABLE} -m pip install -U -e "git+https://github.com/posborne/cmsis-svd.git#egg=cmsis-svd&subdirectory=python")
 
+EXECUTE_PROCESS(
+        COMMAND git clone -n --depth=1 --filter=tree:0 https://github.com/cmsis-svd/cmsis-svd.git
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+)
+
+EXECUTE_PROCESS(
+        COMMAND git sparse-checkout set --no-cone data/STMicro data/Nordic
+        COMMAND git checkout
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/cmsis-svd
+)
+
 # Set the project name to your project name, my project isn't very descriptive
 PROJECT(TypeSafeRegister CXX)
 INCLUDE(cmake/StandardProjectSettings.cmake)
