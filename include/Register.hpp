@@ -25,11 +25,11 @@ struct READWRITE
 };
 
 struct BitType {
-    consteval BitType()
+    constexpr BitType()
             : type("N/A") {
     }
 
-    consteval explicit BitType(const char *data)
+    constexpr explicit BitType(const char *data)
             : type{data, std::char_traits<char>::length(data)} {
     }
 
@@ -45,11 +45,11 @@ struct BitType {
 };
 
 struct BitName {
-    consteval BitName()
+    constexpr BitName()
             : name("Reserved") {
     }
 
-    consteval explicit BitName(const char *data)
+    constexpr explicit BitName(const char *data)
             : name{data, std::char_traits<char>::length(data)} {
     }
 
@@ -286,6 +286,6 @@ private:
 
     static constexpr char const *name = Name;
 #else
-    std::uintptr_t rawPtr{BaseAddress};
+    RegisterWidth* rawPtr{BaseAddress};
 #endif
 };
