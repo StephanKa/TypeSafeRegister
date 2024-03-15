@@ -36,14 +36,14 @@ EXECUTE_PROCESS(COMMAND ${Python_EXECUTABLE} -m pip install --user --upgrade pip
 EXECUTE_PROCESS(COMMAND ${Python_EXECUTABLE} -m pip install -U -e "git+https://github.com/posborne/cmsis-svd.git#egg=cmsis-svd&subdirectory=python")
 
 EXECUTE_PROCESS(
-        COMMAND git clone -n --depth=1 --filter=tree:0 https://github.com/cmsis-svd/cmsis-svd.git
+        COMMAND git clone --filter=blob:none --no-checkout https://github.com/cmsis-svd/cmsis-svd-data.git
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 )
 
 EXECUTE_PROCESS(
         COMMAND git sparse-checkout set --no-cone data/STMicro data/Nordic
         COMMAND git checkout
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/cmsis-svd
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/cmsis-svd-data
 )
 
 # Set the project name to your project name, my project isn't very descriptive

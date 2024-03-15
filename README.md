@@ -211,17 +211,17 @@ Register name:    SHORTS
 
 ## Size Comparison
 
-- [Windows / Linux development](https://godbolt.org/z/7WEKvxc76)
+- [Windows / Linux development](https://godbolt.org/z/PvxxGsMnd)
 
   This will result in larger files because of the possibility of dumping the registers.
 
-- [MCU development](https://godbolt.org/z/7soEMG67s)
+- [MCU development](https://godbolt.org/z/6xazex19K)
 ````asm
 main:                                   # @main
-        or      byte ptr [1342504980], 21
-        mov     eax, dword ptr [1342572544]
-        or      eax, 12
-        mov     dword ptr [1342572544], eax
+        or      byte ptr [rip + DCMI::ICR (.0)], 21
+        mov     rax, qword ptr [rip + RNG::CR (.0)]
+        or      rax, 12
+        mov     qword ptr [rip + RNG::CR (.0)], rax
         and     eax, 2147483647
         ret
 ````
@@ -230,4 +230,3 @@ main:                                   # @main
 
 - generate tests for all peripherals
 - remove duplicate code in CMake
-- use CMake presets

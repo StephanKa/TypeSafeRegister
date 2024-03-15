@@ -1,4 +1,5 @@
 #! /bin/bash
+
 CONTAINER=cpp_dev_env
 WORKDIR=$(pwd)/../
 

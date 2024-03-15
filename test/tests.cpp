@@ -12,7 +12,7 @@ TEST_CASE("Test set CWSIZE with CAPCNT", "CWSIZE set CAPCNT")
 {
     constexpr std::uint32_t VALUE = 42u;
     REQUIRE(DCMI::CWSIZE() == 0u);
-    DCMI::CWSIZE.write(DCMI::BitFields::CAPCNT, VALUE);
+    DCMI::CWSIZE.write(DCMI::BitFields::CAPCNT, VALUE, OrAssign{});
     REQUIRE(DCMI::CWSIZE() == VALUE);
     DCMI::CWSIZE.reset();
     REQUIRE(DCMI::CWSIZE() == 0u);
@@ -22,8 +22,8 @@ TEST_CASE("Test set CWSIZE with VLINE", "CWSIZE set VLINE")
 {
     constexpr std::uint32_t VALUE = 42u * 2u;
     REQUIRE(DCMI::CWSIZE() == 0u);
-    DCMI::CWSIZE.write(DCMI::BitFields::VLINE, VALUE);
-    REQUIRE(DCMI::CWSIZE.read<decltype(DCMI::BitFields::VLINE)>() == VALUE);
+    DCMI::CWSIZE.write(DCMI::BitFields::VLINE, VALUE, OrAssign{});
+    REQUIRE(DCMI::CWSIZE.read(DCMI::BitFields::VLINE) == VALUE);
     REQUIRE(DCMI::CWSIZE() == VALUE << DCMI::BitFields::VLINE.bitOffset);
     DCMI::CWSIZE.reset();
     REQUIRE(DCMI::CWSIZE() == 0u);
@@ -41,4 +41,8 @@ TEST_CASE("Test getMask() for mask 7", "Simple mask")
     constexpr std::size_t width = 3;
     constexpr std::size_t offset = 0;
     REQUIRE(details::getMask<std::uint32_t>(offset, width) == 7);
+}
+TEST_CASE("Test set ICR with OVR_ISC via ^", "ICR set OVR_ISC")
+{
+    DCMI::ICR ^= DCMI::BitFields::OVR_ISC;
 }
