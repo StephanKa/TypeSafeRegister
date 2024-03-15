@@ -16,11 +16,11 @@ jobs:
 
       - name: Build docker-ci image
         shell: bash
-        run: cd docker && sudo ./build-ci-image.sh
+        run: cd docker && ./build-ci-image.sh
 
       - name: Build docker-dev image
         shell: bash
-        run: cd docker && sudo ./build-dev-image.sh
+        run: cd docker && ./build-dev-image.sh
 
   linux:
     name: ${{ matrix.os }}, ${{ matrix.compiler.name }}, ${{ matrix.buildtype }}
@@ -30,7 +30,8 @@ jobs:
       matrix:
         os: [ubuntu-22.04]
         buildtype: [debug, release]
-        compiler: [ {name: 'GCC 11', preset: gcc-11, pkgs: 'gcc-11 g++-11 lib32gcc-11-dev gcc-multilib'},
+        compiler: [ {name: 'GCC 10', preset: gcc-10, pkgs: 'gcc-10 g++-10 lib32gcc-10-dev gcc-multilib'},
+                    {name: 'GCC 11', preset: gcc-11, pkgs: 'gcc-11 g++-11 lib32gcc-11-dev gcc-multilib'},
                     {name: 'GCC 12', preset: gcc-12, pkgs: 'gcc-12 g++-12 lib32gcc-12-dev gcc-multilib'},
                     {name: 'Clang 15', preset: clang-15, version: '15'},
                     {name: 'Clang 16', preset: clang-16, version: '16'},
@@ -69,7 +70,7 @@ jobs:
 
     - name: Install python dependencies
       run:   |
-             python3 -m pip install --upgrade pip setuptools pipenv
+             python3 -m pip install --upgrade pip setuptools pipenv conan
              python3 -m pip install conan jsonschema virtualenv ninja
              python3 -m pip install 'git+https://github.com/posborne/cmsis-svd.git#egg=cmsis-svd&subdirectory=python'
       shell: bash
@@ -106,7 +107,7 @@ jobs:
       - name: Install conan
         shell: bash
         run: |
-          python3 -m pip install --upgrade pip setuptools
+          python3 -m pip install --upgrade pip setuptools conan
           python3 -m pip install conan jsonschema virtualenv ninja
           python3 -m pip install -U -e 'git+https://github.com/posborne/cmsis-svd.git#egg=cmsis-svd&subdirectory=python'
 
@@ -175,7 +176,7 @@ jobs:
 
     - name: Configure via CMake
       shell: bash
-      run: cmake --preset ${{ matrix.compiler.preset }}-${{ matrix.buildtype }}-static-analysis
+      run: cmake --preset ${{ matrix.compiler.preset }}-${{ matrix.buildtype }}-static-analysis -DCXX_STANDARD=17
 
     - name: Build
       shell: bash
@@ -206,7 +207,7 @@ jobs:
     - name: Install conan
       shell: bash
       run: |
-        python3 -m pip install --upgrade pip setuptools
+        python3 -m pip install --upgrade pip setuptools conan
         python3 -m pip install conan jsonschema virtualenv ninja
         python3 -m pip install -U -e 'git+https://github.com/posborne/cmsis-svd.git#egg=cmsis-svd&subdirectory=python'
         source ~/.profile

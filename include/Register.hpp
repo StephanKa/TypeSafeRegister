@@ -166,22 +166,22 @@ public:
     template<typename T = RegisterType>
     requires details::ReadConcept<T>
     RegisterWidth operator()(const RegisterWidth mask) const {
-        return rawPtr & mask;
+        return *rawPtr & mask;
     }
 
     [[nodiscard]] RegisterWidth read([[maybe_unused]] auto value) const requires details::ReadConcept<RegisterType> {
         using BitFieldType = decltype(value);
         static_assert((std::is_same_v<std::remove_cvref_t<BitFieldType>, std::remove_cvref_t<Fields>> || ...),
                       "Bitfield not defined for register");
-        return (rawPtr & BitFieldType::mask) >> BitFieldType::bitOffset;
+        return (*rawPtr & BitFieldType::mask) >> BitFieldType::bitOffset;
     }
 
     [[nodiscard]] RegisterWidth operator()() const requires details::ReadConcept<RegisterType> {
-        return rawPtr & std::numeric_limits<int>::max();
+        return *rawPtr & std::numeric_limits<int>::max();
     }
 
     void operator|=(RegisterWidth bitMask) requires details::WriteConcept<RegisterType> {
-        rawPtr |= bitMask;
+        *rawPtr |= bitMask;
     }
 
     template<typename Field>
@@ -190,13 +190,13 @@ public:
         static_assert((std::is_same_v<std::remove_cvref_t<Field>, std::remove_cvref_t<Fields>> || ...),
                       "Bitfield not defined for register");
         static_assert(field.bitWidth == 1U, "bitWidth is greater 1, please call write operation!");
-        rawPtr |= static_cast<RegisterWidth>(Field::mask);
+        *rawPtr |= static_cast<RegisterWidth>(Field::mask);
     }
 
     template<typename Field>
     requires details::WriteConcept<decltype(Field::Type)>
     void operator&=(RegisterWidth bitMask) {
-        rawPtr &= bitMask;
+        *rawPtr &= bitMask;
     }
 
     template<typename Field>
@@ -205,13 +205,13 @@ public:
         static_assert((std::is_same_v<std::remove_cvref_t<Field>, std::remove_cvref_t<Fields>> || ...),
                       "Bitfield not defined for register");
         static_assert(field.bitWidth == 1U, "bitWidth is greater 1, please call write operation!");
-        rawPtr &= static_cast<RegisterWidth>(Field::mask);
+        *rawPtr &= static_cast<RegisterWidth>(Field::mask);
     }
 
     template<typename Field>
     requires details::WriteConcept<decltype(Field::Type)>
     void operator^=(RegisterWidth bitMask) {
-        rawPtr ^= bitMask;
+        *rawPtr ^= bitMask;
     }
 
     template<typename Field>
@@ -220,7 +220,7 @@ public:
         static_assert((std::is_same_v<std::remove_cvref_t<Field>, std::remove_cvref_t<Fields>> || ...),
                       "Bitfield not defined for register");
         static_assert(field.bitWidth == 1U, "bitWidth is greater 1, please call write operation!");
-        rawPtr ^= static_cast<RegisterWidth>(Field::mask);
+        *rawPtr ^= static_cast<RegisterWidth>(Field::mask);
     }
 
     template<typename Field, typename Operator = OrAssign>
@@ -230,16 +230,18 @@ public:
                       "Bitfield not defined for register");
         static_assert(field.bitWidth > 1U, "bitWidth is equal to 1, use | or & operator!");
         if constexpr (std::is_same_v<Operator, OrAssign>) {
-            rawPtr |= static_cast<RegisterWidth>((value << field.bitOffset) & field.mask);
+            *rawPtr |= static_cast<RegisterWidth>((value << field.bitOffset) & field.mask);
         } else if constexpr (std::is_same_v<Operator, AndAssign>) {
-            rawPtr &= static_cast<RegisterWidth>((value << field.bitOffset) & field.mask);
+            *rawPtr &= static_cast<RegisterWidth>((value << field.bitOffset) & field.mask);
         } else if constexpr (std::is_same_v<Operator, ExclusieOrAssign>) {
-            rawPtr ^= static_cast<RegisterWidth>((value << field.bitOffset) & field.mask);
+            *rawPtr ^= static_cast<RegisterWidth>((value << field.bitOffset) & field.mask);
         }
     }
 
     void reset() {
+#ifdef USE_FMT
         raw = ResetValue;
+#endif
     }
 
     void dump() {
@@ -279,8 +281,8 @@ public:
 
 private:
 #ifdef USE_FMT
-    std::uintptr_t raw = {ResetValue};
-    std::uintptr_t rawPtr = reinterpret_cast<std::uintptr_t>(&raw);
+    RegisterWidth raw = {ResetValue};
+    RegisterWidth* rawPtr = reinterpret_cast<RegisterWidth*>(&raw);
 
     static constexpr char const *name = Name;
 #else
