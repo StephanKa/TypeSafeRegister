@@ -1,5 +1,5 @@
 #include <DCMI.hpp>
-#include <Register.hpp>
+#include <Register.h>
 #include <catch2/catch_all.hpp>
 
 
