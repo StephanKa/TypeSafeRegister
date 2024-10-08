@@ -7,7 +7,7 @@
 #endif
 #include <AssignmentOperations.h>
 #include <BitName.h>
-#include <Bitinfo.h>
+#include <BitInfo.h>
 #include <cstdint>
 #include <details.h>
 #include <limits>
@@ -131,7 +131,7 @@ class Register
               },
               bitInfos);
             size_t offset = 0;
-            for (auto iter = bitInfos.begin(); iter != bitInfos.end(); ++iter, offset++) {
+            for (auto iter = bitInfos.begin(); iter != bitInfos.end(); ++iter, ++offset) {
                 fmt::print(horizontalLine, "");
                 if (iter->bitWidth > 1) {
                     fmt::print(bitContentMultipleWidth, iter->name, iter->type, offset, offset + iter->bitWidth - 1);
