@@ -33,17 +33,19 @@ if __name__ == '__main__':
                 reg.address_offset = reg.address_offset
             for field in reg.fields:
                 if field.is_enumerated_type:
-                    if field.name not in enumerated_values_dict[upper_peripheral_name]:
-                        enumerated_values_dict[upper_peripheral_name][field.name] = list()
-                        for enumerated_value in field.enumerated_values:
-                            enumerated_values_dict[upper_peripheral_name][field.name].append({"name": enumerated_value.name, "description": enumerated_value.description,
-                                                                                              "value": enumerated_value.value << field.bit_offset, "offset": field.bit_offset,
-                                                                                              "width": field.bit_width, "access": field.access})
-                            enumerated_value.description = re.sub(" +", " ", enumerated_value.description.replace("\n", ""))
+                    if field.name in enumerated_values_dict[upper_peripheral_name]:
+                        continue
+                    enumerated_values_dict[upper_peripheral_name][field.name] = list()
+                    for enumerated_value in field.enumerated_values:
+                        enumerated_values_dict[upper_peripheral_name][field.name].append({"name": enumerated_value.name, "description": enumerated_value.description,
+                                                                                          "value": enumerated_value.value << field.bit_offset, "offset": field.bit_offset,
+                                                                                          "width": field.bit_width, "access": field.access})
+                        enumerated_value.description = re.sub(" +", " ", enumerated_value.description.replace("\n", ""))
                 else:
-                    if field.name not in bitfield_dict[upper_peripheral_name]:
-                        bitfield_dict[upper_peripheral_name][field.name] = field
-                        bitfield_dict[upper_peripheral_name][field.name].description = re.sub(" +", " ", field.description.replace("\n", ""))
+                    if field.name in bitfield_dict[upper_peripheral_name]:
+                        continue
+                    bitfield_dict[upper_peripheral_name][field.name] = field
+                    bitfield_dict[upper_peripheral_name][field.name].description = re.sub(" +", " ", field.description.replace("\n", ""))
             if reg.name in reg_names:
                 continue
             reg_names.append(reg.name)

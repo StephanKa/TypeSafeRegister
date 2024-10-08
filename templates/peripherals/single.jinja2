@@ -1,5 +1,7 @@
 #pragma once
-#include <Register.hpp>
+#include <BitField.h>
+#include <EnumeratedField.h>
+#include <Register.h>
 
 {%- set peripheral_name = peripheral.name.upper() %}
 {%- set struct_type = peripheral.name.lower() + "_t" %}

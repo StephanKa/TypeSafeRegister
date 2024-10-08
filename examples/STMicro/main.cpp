@@ -1,4 +1,4 @@
-#include "include/version.hpp"
+#include <include/version.hpp>
 #include <CRC.hpp>
 #include <DCMI.hpp>
 #include <RNG.hpp>

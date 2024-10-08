@@ -14,9 +14,9 @@ class ProjectConan(ConanFile):
     def configure(self):
         """Override the configure method and defines different requirements for different architectures."""
         if self.settings.get_safe('arch') == 'armv7':
-            self.requires = conans.model.requires.Requirements(['fmt/10.1.0'])
+            self.requires = conans.model.requires.Requirements(['fmt/11.0.2'])
         else:
-            self.requires = conans.model.requires.Requirements(['catch2/3.4.0', 'fmt/10.1.0'])
+            self.requires = conans.model.requires.Requirements(['catch2/3.7.0', 'fmt/11.0.2'])
 
     def build(self):
         """Override the build method."""
