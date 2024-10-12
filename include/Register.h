@@ -37,13 +37,13 @@ class Register
     {
         using BitFieldType = decltype(value);
         static_assert((std::is_same_v<std::remove_cvref_t<BitFieldType>, std::remove_cvref_t<Fields>> || ...), "Bitfield not defined for register");
-        return ((rawPtr)&BitFieldType::mask) >> BitFieldType::bitOffset;
+        return (rawPtr&BitFieldType::mask) >> BitFieldType::bitOffset;
     }
 
     [[nodiscard]] RegisterWidth operator()() const
         requires details::ReadConcept<RegisterType>
     {
-        return (rawPtr)&std::numeric_limits<RegisterWidth>::max();
+        return rawPtr&static_cast<decltype(rawPtr)>(std::numeric_limits<RegisterWidth>::max());
     }
 
     void operator|=(RegisterWidth bitMask)
