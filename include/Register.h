@@ -111,7 +111,7 @@ class Register
     void reset()
     {
 #ifdef USE_FMT
-        raw = ResetValue;
+        rawPtr = ResetValue;
 #endif
     }
 
@@ -151,8 +151,7 @@ class Register
 
   private:
 #ifdef USE_FMT
-    RegisterWidth raw = { ResetValue };
-    std::uintptr_t rawPtr{ raw };
+    std::uintptr_t rawPtr{ ResetValue };
 
     static constexpr char const *name = Name;
 #else
