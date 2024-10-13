@@ -3,6 +3,7 @@
 #include <map>
 #include <type_traits>
 #include <typeindex>
+#include <array>
 
 struct READONLY
 {
