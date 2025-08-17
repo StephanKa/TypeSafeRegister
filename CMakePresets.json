@@ -30,9 +30,7 @@
       "displayName": "Base preset for release builds",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "ENABLE_FMT": "ON",
-        "ENABLE_FILE_PERSISTENCE": "ON",
-        "ENABLE_PYBIND11": "ON"
+        "ENABLE_FMT": "ON"
       }
     },
     {
@@ -208,9 +206,7 @@
       },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "ENABLE_FMT": "ON",
-        "ENABLE_FILE_PERSISTENCE": "ON",
-        "ENABLE_PYBIND11": "ON"
+        "ENABLE_FMT": "ON"
       }
     },
     {
@@ -224,9 +220,7 @@
       },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "ENABLE_FMT": "ON",
-        "ENABLE_FILE_PERSISTENCE": "ON",
-        "ENABLE_PYBIND11": "ON"
+        "ENABLE_FMT": "ON"
       }
     },
     {
@@ -240,9 +234,7 @@
       },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "ENABLE_FMT": "ON",
-        "ENABLE_FILE_PERSISTENCE": "ON",
-        "ENABLE_PYBIND11": "ON"
+        "ENABLE_FMT": "ON"
       }
     },
     {
@@ -256,9 +248,7 @@
       },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "ENABLE_FMT": "ON",
-        "ENABLE_FILE_PERSISTENCE": "ON",
-        "ENABLE_PYBIND11": "ON"
+        "ENABLE_FMT": "ON"
       }
     },
     {
@@ -274,9 +264,7 @@
         "CMAKE_C_COMPILER": "gcc.exe",
         "CMAKE_CXX_COMPILER": "g++.exe",
         "CMAKE_BUILD_TYPE": "Debug",
-        "ENABLE_FMT": "ON",
-        "ENABLE_FILE_PERSISTENCE": "ON",
-        "ENABLE_PYBIND11": "ON"
+        "ENABLE_FMT": "ON"
       }
     },
     {
@@ -292,9 +280,7 @@
         "CMAKE_C_COMPILER": "gcc.exe",
         "CMAKE_CXX_COMPILER": "g++.exe",
         "CMAKE_BUILD_TYPE": "Release",
-        "ENABLE_FMT": "ON",
-        "ENABLE_FILE_PERSISTENCE": "ON",
-        "ENABLE_PYBIND11": "ON"
+        "ENABLE_FMT": "ON"
       }
     },
     {
