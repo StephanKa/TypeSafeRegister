@@ -33,10 +33,10 @@ FIND_PACKAGE(Python COMPONENTS Interpreter REQUIRED)
 
 # install PyPI Python package using pip
 EXECUTE_PROCESS(COMMAND ${Python_EXECUTABLE} -m pip install --user --upgrade pip setuptools jinja2 conan)
-EXECUTE_PROCESS(COMMAND ${Python_EXECUTABLE} -m pip install -U -e "git+https://github.com/posborne/cmsis-svd.git#egg=cmsis-svd&subdirectory=python")
+EXECUTE_PROCESS(COMMAND ${Python_EXECUTABLE} -m pip install -U -e "git+https://github.com/posborne/cmsis-svd.git@python-0.5#egg=cmsis-svd&subdirectory=python")
 
 EXECUTE_PROCESS(
-        COMMAND git clone --filter=blob:none --no-checkout https://github.com/cmsis-svd/cmsis-svd-data.git
+        COMMAND git clone --depth 1 --filter=blob:none --no-checkout https://github.com/cmsis-svd/cmsis-svd-data.git
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 )
 
