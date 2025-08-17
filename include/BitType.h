@@ -17,8 +17,13 @@ struct BitType
 
 #ifdef USE_FMT
 
-    explicit BitType(const std::string_view data) : type{ data }
+    constexpr explicit BitType(const std::string_view data) : type{ data }
     {}
+
+    constexpr bool operator==(const BitType &rhs) const
+    {
+        return rhs.type == type;
+    }
 
 #endif
 

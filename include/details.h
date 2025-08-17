@@ -1,4 +1,5 @@
 #pragma once
+#include <CompileTimeMap.h>
 #include <BitType.h>
 #include <map>
 #include <type_traits>
@@ -45,14 +46,12 @@ struct FixedString
     std::array<char, N + 1> buf{};
     consteval FixedString(char const *input)
     {
-        for (unsigned i = 0; i != N; ++i) {
-            buf[i] = input[i];
-        }
+        std::copy_n(input, N, buf.data());
     }
 
-    [[nodiscard]] constexpr operator char const *() const
+    [[nodiscard]] explicit constexpr operator std::string_view() const
     {
-        return buf.data();
+        return {buf.data(), N};
     }
 };
 
@@ -61,7 +60,11 @@ FixedString(const char (&)[N]) -> FixedString<N - 1>;
 
 #ifdef USE_FMT
 using namespace std::string_view_literals;
-static std::map<std::type_index, BitType> TypeMap = { { typeid(READONLY), BitType{ "R"sv } }, { typeid(WRITEONLY), BitType{ "W"sv } }, { typeid(READWRITE), BitType{ "R/W"sv } } };
+
+constexpr auto TypeMap = CompileTimeMap<const std::type_info*, BitType>(
+    Element{.key=&typeid(READONLY), .value=BitType{ "R"sv }},
+    Element{.key=&typeid(READONLY), .value=BitType{ "W"sv }},
+    Element{.key=&typeid(READONLY), .value=BitType{ "R/W"sv }});
 #endif
 
 }// namespace details

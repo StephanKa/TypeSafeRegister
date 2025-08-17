@@ -127,7 +127,7 @@ class Register
             std::array<BitInfo, std::numeric_limits<RegisterWidth>::digits> bitInfos;
             std::apply(
               [&](auto &...) {
-                  ((bitInfos[Fields::bitOffset] = BitInfo{ Fields::bitWidth, details::TypeMap[typeid(Fields::Type)], BitName{ Fields::name } }), ...);
+                  ((bitInfos[Fields::bitOffset] = BitInfo{ Fields::bitWidth, details::TypeMap.getValue(&typeid(Fields::Type)).value(), BitName{ Fields::name } }), ...);
               },
               bitInfos);
             size_t offset = 0;
