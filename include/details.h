@@ -63,8 +63,8 @@ using namespace std::string_view_literals;
 
 constexpr auto TypeMap = CompileTimeMap<const std::type_info*, BitType>(
     Element{.key=&typeid(READONLY), .value=BitType{ "R"sv }},
-    Element{.key=&typeid(READONLY), .value=BitType{ "W"sv }},
-    Element{.key=&typeid(READONLY), .value=BitType{ "R/W"sv }});
+    Element{.key=&typeid(WRITEONLY), .value=BitType{ "W"sv }},
+    Element{.key=&typeid(WRITEREAD), .value=BitType{ "R/W"sv }});
 #endif
 
 }// namespace details
