@@ -17,6 +17,13 @@ IF(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang" AND CMAKE_CXX_COMPILER_VERSION VERSIO
         TARGET_COMPILE_OPTIONS(${PROJECT_NAME} PRIVATE -Wno-error=c2y-extensions)
 ENDIF()
 
+IF(ENABLE_AMALGAMATION)
+        ADD_EXECUTABLE(AmalgamationHeaderCheck amalgamation.cpp)
+        ADD_DEPENDENCIES(AmalgamationHeaderCheck TypeSafeRegisterAmalgamation)
+        TARGET_INCLUDE_DIRECTORIES(AmalgamationHeaderCheck PRIVATE ${CMAKE_BINARY_DIR}/generated/include)
+        TARGET_LINK_LIBRARIES(AmalgamationHeaderCheck PRIVATE project_warnings project_options)
+ENDIF()
+
 IF(TYPESAFE_REGISTER_USE_FMT)
         TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE fmt::fmt-header-only)
 ENDIF()

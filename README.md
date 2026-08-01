@@ -204,6 +204,7 @@ Register name:    SHORTS
 
 - C++23 default build with concepts, `std::expected`, and `std::format` output
 - `ENABLE_OUTPUT` selects `std::format` for C++20+; only explicit pre-C++20 compatibility builds use `{fmt}`
+- `-DENABLE_AMALGAMATION=ON` generates `generated/include/TypeSafeRegister.hpp`, a single header containing all public runtime register types. Build the `TypeSafeRegisterAmalgamation` target to generate it. Device-specific SVD peripheral headers remain generated separately.
 - Typesafe access of registers
 - Register defines can't be mixed up, e.g one define for another register
 - Supports many chip families, see **cmsis-svd**
