@@ -21,6 +21,7 @@ MESSAGE("Using C++ standard ${CMAKE_CXX_STANDARD}")
 
 INCLUDE(cmake/Options.cmake)
 INCLUDE(cmake/CodeFormat.cmake)
+INCLUDE(cmake/Sphinx.cmake)
 
 EXECUTE_PROCESS(
         COMMAND git log -1 --format=%h
@@ -106,6 +107,7 @@ ENABLE_SANITIZERS(project_options)
 # enable doxygen
 INCLUDE(cmake/Doxygen.cmake)
 ENABLE_DOXYGEN()
+ENABLE_SPHINX()
 
 # allow for static analysis options
 INCLUDE(cmake/StaticAnalyzers.cmake)
