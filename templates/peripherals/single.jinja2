@@ -1,75 +1,107 @@
 #pragma once
+
+#include <array>
 #include <BitField.h>
 #include <EnumeratedField.h>
 #include <Register.h>
+#include <RegisterArray.h>
+#include <SvdTypes.h>
 
-{%- set peripheral_name = peripheral.name.upper() %}
-{%- set struct_type = peripheral.name.lower() + "_t" %}
-
-namespace {{ peripheral_name }}
+namespace {{ peripheral.identifier }}
 {
-    struct {{ struct_type }}{};
+    inline constexpr std::uintptr_t base_address = 0x{{ "%x" | format(peripheral.base_address) }}U;
 
-    constexpr std::uint32_t {{ peripheral_name }}_BASE_ADDRESS = {{ peripheral.base_address }}u;
-    {%- if enum_values | length > 0 %}
-    namespace EnumFields
+{% for register in peripheral.registers %}
+    namespace {{ register.identifier }}_Fields
     {
+{% if register.fields | selectattr('enum_values') | list | length > 0 %}
         namespace Enums
         {
-            {%- for enumerated_value in enum_values %}
-            enum class {{ enumerated_value }} : std::uint32_t
-            { {%- for value in enum_values[enumerated_value] %}
-                // {{ value.description }}
-                {%- if value.name[0].isdigit() %}
-                {{ enumerated_value }}_{{ value.name }} = {{ "0x%0x" | format( value.value | int) }},
-                {%- else %}
-                {{ value.name }} = {{ "0x%0x" | format( value.value | int) }},
-                {%- endif %}
-                {%- endfor %}
+{% for field in register.fields if field.enum_values %}
+            enum class {{ field.identifier }} : {{ register.width_type }}
+            {
+{% for value in field.enum_values %}
+                {{ value.identifier }} = {{ value.value }},
+{% endfor %}
             };
-            {%- endfor %}
-        } // namespace Enums
+{% endfor %}
+        }// namespace Enums
+{% endif %}
+{% for field in register.fields %}
+        // Bit {{ field.offset }}{% if field.width > 1 %} - {{ field.offset + field.width - 1 }}{% endif %}: {{ field.description }}
+{% if field.enum_values %}
+        inline constexpr auto {{ field.identifier }} = EnumeratedField<Enums::{{ field.identifier }}, {{ field.offset }}, {{ field.width }}, "{{ field.identifier }}", {{ field.access }}, {{ field.register_width_type }}, {{ field.modified_write_value }}, {{ field.read_action }}>{};
+{% else %}
+        inline constexpr auto {{ field.identifier }} = BitField<{{ peripheral.identifier }}, {{ field.offset }}, {{ field.width }}, "{{ field.identifier }}", {{ field.access }}, {{ field.register_width_type }}, {{ field.modified_write_value }}, {{ field.read_action }}>{};
+{% endif %}
+        static_assert({{ field.identifier }}.mask == details::getMask<{{ field.register_width_type }}>({{ field.offset }}, {{ field.width }}));
+{% endfor %}
+    }// namespace {{ register.identifier }}_Fields
 
-        {% for enumerated_value in enum_values -%}
-        // bit offset: {{ enum_values[enumerated_value][0].offset }}, bit width: {{ enum_values[enumerated_value][0].width }}
-        constexpr auto {{ enumerated_value }} = EnumeratedField<Enums::{{ enumerated_value }}, {{ enum_values[enumerated_value][0].offset }}, {{ enum_values[enumerated_value][0].width }}, "{{ enumerated_value }}"{% if enum_values[enumerated_value][0].access %}, {{ enum_values[enumerated_value][0].access.upper() | replace("-", "") }}{% endif %}>{};
-        {% endfor -%}
-    } // namespace EnumFields
-    {%- endif %}
+    inline Register<{{ register.width_type }}, base_address + 0x{{ "%x" | format(register.offset) }}U, 0x{{ "%x" | format(register.reset_value) }}U, {{ register.access }}, "{{ register.identifier }}"
+{% for field in register.fields %}
+        , decltype({{ register.identifier }}_Fields::{{ field.identifier }})
+{% endfor %}> {{ register.identifier }}{};
+{% endfor %}
 
-    namespace BitFields
+{% for array in peripheral.arrays %}
+    namespace {{ array.identifier }}_Fields
     {
-        {%- for value in bitfield_values %}
-        // bit offset: {{ bitfield_values[value].bit_offset }}, bit width: {{ bitfield_values[value].bit_width }}, {{ bitfield_values[value].description }}
-        constexpr auto {{ bitfield_values[value].name }} = BitField<{{ struct_type }}, {{ bitfield_values[value].bit_offset }}, {{ bitfield_values[value].bit_width }}, "{{ bitfield_values[value].name }}"{% if bitfield_values[value].access %}, {{ bitfield_values[value].access.upper() | replace("-", "") }}{% endif %}>{};
-        {%- endfor %}
-    } // namespace BitFields
-{% for reg in register_dict -%}
-    {%- for field in reg.fields %}
-        {%- if field.enumerated_values %}
-            {%- if field.name not in enum_values %}
-    enum class {{ field.name }} : std::uint{{ reg.size }}_t
+{% if array.fields | selectattr('enum_values') | list | length > 0 %}
+    namespace Enums
     {
-        {% for enumerated_value in field.enumerated_values -%}
-        // {{ enumerated_value.description }}
-            {% if enumerated_value.name[0].isdigit() -%}
-        {{ enumerated_value.name }} = {{ enumerated_value.value * field.bit_offset }},
-            {% else -%}
-        {{ enumerated_value.name }} = {{ enumerated_value.value * field.bit_offset }},
-            {% endif -%}
-        {% endfor -%}
+{% for field in array.fields if field.enum_values %}
+        enum class {{ field.identifier }} : {{ array.width_type }}
+        {
+{% for value in field.enum_values %}
+        {{ value.identifier }} = {{ value.value }},
+{% endfor %}
+        };
+{% endfor %}
+    }// namespace Enums
+{% endif %}
+{% for field in array.fields %}
+{% if field.enum_values %}
+    inline constexpr auto {{ field.identifier }} = EnumeratedField<Enums::{{ field.identifier }}, {{ field.offset }}, {{ field.width }}, "{{ field.identifier }}", {{ field.access }}, {{ field.register_width_type }}, {{ field.modified_write_value }}, {{ field.read_action }}>{};
+{% else %}
+        inline constexpr auto {{ field.identifier }} = BitField<{{ peripheral.identifier }}, {{ field.offset }}, {{ field.width }}, "{{ field.identifier }}", {{ field.access }}, {{ field.register_width_type }}, {{ field.modified_write_value }}, {{ field.read_action }}>{};
+{% endif %}
+{% endfor %}
+    }// namespace {{ array.identifier }}_Fields
+
+    inline constexpr RegisterArray<{{ array.width_type }}, base_address + 0x{{ "%x" | format(array.offset) }}U, 0x{{ "%x" | format(array.reset_value) }}U, {{ array.access }}, "{{ array.identifier }}", {{ array.count }}, 0x{{ "%x" | format(array.increment) }}U
+{% for field in array.fields %}
+        , decltype({{ array.identifier }}_Fields::{{ field.identifier }})
+{% endfor %}> {{ array.identifier }}{};
+{% endfor %}
+
+    inline constexpr std::array<details::RegisterInfo, {{ peripheral.registers | length }}> register_info{
+{% for register in peripheral.registers %}
+        details::RegisterInfo{ "{{ register.name }}", {{ register.description | cpp_string }}, base_address + 0x{{ "%x" | format(register.offset) }}U, 0x{{ "%x" | format(register.reset_value) }}U, {{ register.width }}, {{ register.metadata_access }}, {{ register.modified_write_value }}, {{ register.read_action }} },
+{% endfor %}
     };
-            {%- endif %}
-    {%- endif %}
-    {%- endfor %}
-    // {{ reg.description }}
-    static Register<std::uint32_t, {{ peripheral_name }}_BASE_ADDRESS + {{ reg.address_offset }}u, {% if reg.reset_value == None %}0x0{% else %}{{ "0x%0x" | format( reg.reset_value | int) }}{% endif %}{% if reg.access %}, {{ reg.access.upper() | replace("-", "") }}{% else %}, READWRITE{% endif %}, "{{ reg.name.upper() }}"
-    {%- for field in reg.fields -%}
-        {%- if field.enumerated_values -%}
-    , decltype(EnumFields::{{ field.name }})
-        {%- else -%}
-    , decltype(BitFields::{{ field.name }})
-        {%- endif %}
-    {%- endfor %}> {{ reg.name.upper() | replace("[", "_")  | replace("]", "") }};
-{%- endfor %}
-} // namespace {{ peripheral_name }}
+
+    inline constexpr std::array<details::AddressBlockInfo, {{ peripheral.address_blocks | length }}> address_blocks{
+{% for address_block in peripheral.address_blocks %}
+        details::AddressBlockInfo{ base_address + 0x{{ "%x" | format(address_block.offset) }}U, 0x{{ "%x" | format(address_block.size) }}U, {{ address_block.usage | cpp_string }} },
+{% endfor %}
+    };
+
+{% if peripheral.interrupts %}
+    enum class Interrupt : std::int32_t
+    {
+{% for interrupt in peripheral.interrupts %}
+        {{ interrupt.identifier }} = {{ interrupt.value }},
+{% endfor %}
+    };
+{% endif %}
+    inline constexpr std::array<details::InterruptInfo, {{ peripheral.interrupts | length }}> interrupt_info{
+{% for interrupt in peripheral.interrupts %}
+        details::InterruptInfo{ "{{ interrupt.name }}", {{ interrupt.description | cpp_string }}, {{ interrupt.value }} },
+{% endfor %}
+    };
+
+    inline constexpr details::PeripheralInfo info{
+        "{{ peripheral.name }}", {{ peripheral.description | cpp_string }}, {{ peripheral.group_name | cpp_string }}, base_address, register_info.size()
+    };
+}// namespace {{ peripheral.identifier }}

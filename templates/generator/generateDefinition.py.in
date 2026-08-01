@@ -1,3 +1,184 @@
+import os
+import re
+
+from cmsis_svd.parser import SVDParser
+from jinja2 import Environment, FileSystemLoader
+
+ACCESS_TYPES = {
+    "read-only": ("READONLY", "details::Access::ReadOnly"),
+    "write-only": ("WRITEONLY", "details::Access::WriteOnly"),
+    "read-write": ("READWRITE", "details::Access::ReadWrite"),
+}
+
+MODIFIED_WRITE_VALUES = {
+    "clear": "details::ModifiedWriteValue::Clear",
+    "set": "details::ModifiedWriteValue::Set",
+    "modify": "details::ModifiedWriteValue::Modify",
+    "onetoclear": "details::ModifiedWriteValue::OneToClear",
+    "onetoset": "details::ModifiedWriteValue::OneToSet",
+    "onetotoggle": "details::ModifiedWriteValue::OneToToggle",
+    "zerotoclear": "details::ModifiedWriteValue::ZeroToClear",
+    "zerotoset": "details::ModifiedWriteValue::ZeroToSet",
+    "zerototoggle": "details::ModifiedWriteValue::ZeroToToggle",
+}
+
+READ_ACTIONS = {
+    "clear": "details::ReadAction::Clear",
+    "set": "details::ReadAction::Set",
+    "modify": "details::ReadAction::Modify",
+}
+
+def cpp_identifier(value):
+    identifier = re.sub(r"[^A-Za-z0-9_]", "_", value or "unnamed")
+    if identifier[0].isdigit():
+        identifier = "_" + identifier
+    return identifier
+
+def unique_identifier(value, used):
+    identifier = cpp_identifier(value)
+    base_identifier = identifier
+    suffix = 2
+    while identifier in used:
+        identifier = "{}_{}".format(base_identifier, suffix)
+        suffix += 1
+    used.add(identifier)
+    return identifier
+
+def normalize(value):
+    return re.sub(r"[^a-z0-9]", "", str(value or "").lower())
+
+def clean_description(value):
+    return re.sub(r"\s+", " ", value or "").strip()
+
+def cpp_string(value):
+    return '"{}"'.format(
+        clean_description(value).replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
+    )
+
+def integer(value, default=0):
+    if value is None:
+        return default
+    return int(value, 0) if isinstance(value, str) else int(value)
+
+def width_type(width):
+    bits = integer(width, 32)
+    if bits not in (8, 16, 32, 64):
+        raise ValueError("Unsupported SVD register width: {}".format(bits))
+    return "std::uint{}_t".format(bits)
+
+def access_types(access):
+    return ACCESS_TYPES.get(str(access or "read-write").lower(), ACCESS_TYPES["read-write"])
+
+def modified_write_value(value):
+    return MODIFIED_WRITE_VALUES.get(normalize(value), "details::ModifiedWriteValue::None")
+
+def read_action(value):
+    return READ_ACTIONS.get(normalize(value), "details::ReadAction::None")
+
+def build_fields(fields, width):
+    result = []
+    used_identifiers = set()
+    for field in sorted(fields or [], key=lambda item: item.bit_offset):
+        identifier = unique_identifier(field.name, used_identifiers)
+        enum_values = []
+        enum_identifiers = set()
+        for enum_value in field.enumerated_values or []:
+            enum_values.append({
+                "identifier": unique_identifier(enum_value.name, enum_identifiers),
+                "value": integer(enum_value.value),
+                "description": clean_description(enum_value.description),
+            })
+        field_access, _ = access_types(field.access)
+        result.append({
+            "name": field.name,
+            "identifier": identifier,
+            "description": clean_description(field.description),
+            "offset": integer(field.bit_offset),
+            "width": integer(field.bit_width),
+            "register_width": width,
+            "register_width_type": width_type(width),
+            "access": field_access,
+            "modified_write_value": modified_write_value(field.modified_write_values),
+            "read_action": read_action(field.read_action),
+            "enum_values": enum_values,
+        })
+    return result
+
+def build_register(register, used_identifiers):
+    width = integer(register.size, 32)
+    field_access, metadata_access = access_types(register.access)
+    return {
+        "name": register.name,
+        "identifier": unique_identifier(register.name, used_identifiers),
+        "description": clean_description(register.description),
+        "offset": integer(register.address_offset),
+        "width": width,
+        "width_type": width_type(width),
+        "access": field_access,
+        "metadata_access": metadata_access,
+        "reset_value": integer(register.reset_value),
+        "modified_write_value": modified_write_value(register.modified_write_values),
+        "read_action": read_action(register.read_action),
+        "fields": build_fields(register.fields, width),
+    }
+
+def build_array(register_array, used_identifiers):
+    array = build_register(register_array, used_identifiers)
+    array["count"] = integer(register_array.dim)
+    array["increment"] = integer(register_array.dim_increment)
+    return array
+
+def build_peripheral(peripheral):
+    register_identifiers = set()
+    registers = [build_register(register, register_identifiers) for register in peripheral.registers]
+    arrays = [build_array(register_array, register_identifiers) for register_array in peripheral.register_arrays]
+    interrupts = []
+    interrupt_identifiers = set()
+    seen_interrupts = set()
+    for interrupt in peripheral.interrupts or []:
+        key = (interrupt.name, integer(interrupt.value))
+        if key in seen_interrupts:
+            continue
+        seen_interrupts.add(key)
+        interrupts.append({
+            "name": interrupt.name,
+            "identifier": unique_identifier(interrupt.name, interrupt_identifiers),
+            "description": clean_description(interrupt.description),
+            "value": integer(interrupt.value),
+        })
+
+    address_blocks = [{
+        "offset": integer(address_block.offset),
+        "size": integer(address_block.size),
+        "usage": clean_description(address_block.usage),
+    } for address_block in peripheral.address_blocks or []]
+
+    return {
+        "name": peripheral.name,
+        "identifier": cpp_identifier(peripheral.name.upper()),
+        "base_address": integer(peripheral.base_address),
+        "description": clean_description(peripheral.description),
+        "group_name": clean_description(peripheral.group_name),
+        "registers": registers,
+        "arrays": arrays,
+        "interrupts": interrupts,
+        "address_blocks": address_blocks,
+    }
+
+if __name__ == '__main__':
+    environment = Environment(loader=FileSystemLoader('@TEMPLATE_FOLDER_PATH@'), trim_blocks=True, lstrip_blocks=True)
+    environment.filters['cpp_string'] = cpp_string
+
+    parser = SVDParser.for_packaged_svd('@CMSIS_SVD_DATA_DIR@/data', '@CHIP_MANUFACTURER@', '@CHIP_FAMILY@')
+    peripherals = sorted((build_peripheral(peripheral) for peripheral in parser.get_device().peripherals), key=lambda item: item['base_address'])
+
+    output_directory = '@CMAKE_CURRENT_BINARY_DIR@/generated'
+    os.makedirs(output_directory, exist_ok=True)
+    template = environment.get_template('peripherals/single.jinja2')
+    for peripheral in peripherals:
+        output = template.render(peripheral=peripheral)
+        with open(os.path.join(output_directory, '{}.hpp'.format(peripheral['identifier'])), 'w', encoding='utf-8') as output_file:
+            output_file.write(output)
 import re
 import os
 from cmsis_svd.parser import SVDParser
@@ -7,7 +188,7 @@ if __name__ == '__main__':
     file_loader = FileSystemLoader('@TEMPLATE_FOLDER_PATH@')
     env = Environment(loader=file_loader)
 
-    parser = SVDParser.for_packaged_svd('@CMAKE_BINARY_DIR@/cmsis-svd-data/data', '@CHIP_MANUFACTURER@', '@CHIP_FAMILY@')
+    parser = SVDParser.for_packaged_svd('@CMSIS_SVD_DATA_DIR@/data', '@CHIP_MANUFACTURER@', '@CHIP_FAMILY@')
 
     peripherals = parser.get_device().peripherals
     peripherals = sorted(peripherals, key=lambda x: x.base_address)
@@ -44,6 +225,7 @@ if __name__ == '__main__':
                 else:
                     if field.name in bitfield_dict[upper_peripheral_name]:
                         continue
+                    field.register_width = reg.size
                     bitfield_dict[upper_peripheral_name][field.name] = field
                     bitfield_dict[upper_peripheral_name][field.name].description = re.sub(" +", " ", field.description.replace("\n", ""))
             if reg.name in reg_names:
@@ -60,5 +242,5 @@ if __name__ == '__main__':
                                  register_dict=register_dict[peripheral.name.upper()],
                                  enum_values=enumerated_values_dict[peripheral.name.upper()],
                                  bitfield_values=bitfield_dict[peripheral.name.upper()])
-        with open("@CMAKE_CURRENT_BINARY_DIR@/generated/{0}.hpp".format(peripheral.name.upper()), "w") as f:
+        with open("@CMAKE_CURRENT_BINARY_DIR@/generated/{0}.hpp".format(peripheral.name.upper()), "w", encoding="utf-8") as f:
             f.write(output)
