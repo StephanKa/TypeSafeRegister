@@ -8,6 +8,7 @@ This project is based on [Lefticus - cpp_starter_project](https://github.com/lef
 
 - Install [cmsis_svd](https://github.com/posborne/cmsis-svd/tree/master/python) and Jinja with `python -m pip install cmsis-svd jinja2`.
 - Provide a local [cmsis-svd-data](https://github.com/cmsis-svd/cmsis-svd-data) checkout through `CMSIS_SVD_DATA_DIR`, or configure CMake once with `-DFETCH_CMSIS_SVD_DATA=ON`. CMake does not install Python packages or download SVD data unless explicitly requested.
+- Linux CMake presets support GCC 14-16 and Clang 20-22. For example, configure a Clang 22 debug build with `cmake --preset clang-22-debug`, then build and test with `cmake --build --preset clang-22-debug` and `ctest --preset clang-22-debug`.
 
 
 ## General

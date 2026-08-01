@@ -8,14 +8,16 @@ services:
     container_name: cpp_dev_env
     image: cpp_dev_env:latest
     environment:
-        - TERM=xterm-256color # For a colored Terminal
-        - SSH_AUTH_SOCK=/ssh-agent
+      - TERM=xterm-256color
+      - CCACHE_DIR=/home/dev/.cache/ccache
     volumes:
-        - ${PWD}/../:/home/dev/workspace
+      - ${PWD}/../:/home/dev/workspace
+      - ccache:/home/dev/.cache/ccache
     command: /usr/sbin/sshd -D
     user: root
-    network_mode: "bridge"
     ports:
       - "2222:22"
-    privileged: true
     hostname: cpp_docker_env
+
+volumes:
+  ccache:
