@@ -8,8 +8,13 @@ class ProjectConan(ConanFile):
     default_options = {'fmt/*:header_only': True}
     generators = 'CMakeDeps', 'CMakeToolchain'
 
+    def _uses_legacy_format(self):
+        cppstd = self.settings.get_safe('compiler.cppstd')
+        return cppstd is not None and int(str(cppstd).removeprefix('gnu')) < 20
+
     def requirements(self):
-        self.requires('fmt/11.2.0')
+        if self._uses_legacy_format():
+            self.requires('fmt/11.2.0')
         if self.settings.get_safe('arch') == 'armv7':
             return
 

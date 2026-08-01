@@ -1,20 +1,22 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.19)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.23)
 
 INCLUDE(cmake/Conan.cmake)
 
-IF(NOT DEFINED ${CHIP_MANUFACTURER})
+IF(NOT DEFINED CHIP_MANUFACTURER)
     SET(CHIP_MANUFACTURER STMicro)
 ENDIF()
 
-IF(NOT DEFINED ${CHIP_FAMILY})
+IF(NOT DEFINED CHIP_FAMILY)
     SET(CHIP_FAMILY STM32F20x.svd)
 ENDIF()
 
 IF(NOT DEFINED CXX_STANDARD)
-    SET(CMAKE_CXX_STANDARD 20)
+    SET(CMAKE_CXX_STANDARD 23)
 ELSE()
     SET(CMAKE_CXX_STANDARD ${CXX_STANDARD})
 ENDIF()
+SET(CMAKE_CXX_STANDARD_REQUIRED ON)
+SET(CMAKE_CXX_EXTENSIONS OFF)
 MESSAGE("Using C++ standard ${CMAKE_CXX_STANDARD}")
 
 INCLUDE(cmake/Options.cmake)
@@ -30,21 +32,46 @@ EXECUTE_PROCESS(
 CONFIGURE_FILE("templates/version.hpp.in" "${CMAKE_BINARY_DIR}/generated/include/version.hpp" ESCAPE_QUOTES)
 
 FIND_PACKAGE(Python COMPONENTS Interpreter REQUIRED)
+FIND_PACKAGE(Git REQUIRED)
 
-# install PyPI Python package using pip
-EXECUTE_PROCESS(COMMAND ${Python_EXECUTABLE} -m pip install --user --upgrade pip setuptools jinja2 conan)
-EXECUTE_PROCESS(COMMAND ${Python_EXECUTABLE} -m pip install -U -e "git+https://github.com/posborne/cmsis-svd.git@python-0.5#egg=cmsis-svd&subdirectory=python")
-
-EXECUTE_PROCESS(
-        COMMAND git clone --depth 1 --filter=blob:none --no-checkout https://github.com/cmsis-svd/cmsis-svd-data.git
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-)
+SET(CMSIS_SVD_DATA_DIR "${CMAKE_BINARY_DIR}/cmsis-svd-data" CACHE PATH "Path to a cmsis-svd-data checkout")
+OPTION(FETCH_CMSIS_SVD_DATA "Download cmsis-svd-data during CMake configuration" OFF)
 
 EXECUTE_PROCESS(
-        COMMAND git sparse-checkout set --no-cone data/STMicro data/Nordic
-        COMMAND git checkout
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/cmsis-svd-data
+    COMMAND ${Python_EXECUTABLE} -c "import cmsis_svd; import jinja2"
+    RESULT_VARIABLE PYTHON_GENERATOR_DEPENDENCIES_RESULT
 )
+IF(NOT PYTHON_GENERATOR_DEPENDENCIES_RESULT EQUAL 0)
+    MESSAGE(FATAL_ERROR "The generator requires cmsis-svd and jinja2 in ${Python_EXECUTABLE}. Install them with '${Python_EXECUTABLE} -m pip install cmsis-svd jinja2'.")
+ENDIF()
+
+IF(NOT EXISTS "${CMSIS_SVD_DATA_DIR}/data")
+    IF(NOT FETCH_CMSIS_SVD_DATA)
+    MESSAGE(FATAL_ERROR "cmsis-svd-data was not found at ${CMSIS_SVD_DATA_DIR}. Set CMSIS_SVD_DATA_DIR or configure with -DFETCH_CMSIS_SVD_DATA=ON.")
+    ENDIF()
+
+    EXECUTE_PROCESS(
+        COMMAND ${GIT_EXECUTABLE} clone --depth 1 --filter=blob:none --no-checkout https://github.com/cmsis-svd/cmsis-svd-data.git ${CMSIS_SVD_DATA_DIR}
+        RESULT_VARIABLE CMSIS_SVD_CLONE_RESULT
+    )
+    IF(NOT CMSIS_SVD_CLONE_RESULT EQUAL 0)
+    MESSAGE(FATAL_ERROR "Failed to clone cmsis-svd-data.")
+    ENDIF()
+
+    EXECUTE_PROCESS(
+        COMMAND ${GIT_EXECUTABLE} sparse-checkout set --no-cone data/STMicro data/Nordic
+        WORKING_DIRECTORY ${CMSIS_SVD_DATA_DIR}
+        RESULT_VARIABLE CMSIS_SVD_SPARSE_CHECKOUT_RESULT
+    )
+    EXECUTE_PROCESS(
+        COMMAND ${GIT_EXECUTABLE} checkout
+        WORKING_DIRECTORY ${CMSIS_SVD_DATA_DIR}
+        RESULT_VARIABLE CMSIS_SVD_CHECKOUT_RESULT
+    )
+    IF(NOT CMSIS_SVD_SPARSE_CHECKOUT_RESULT EQUAL 0 OR NOT CMSIS_SVD_CHECKOUT_RESULT EQUAL 0)
+    MESSAGE(FATAL_ERROR "Failed to prepare cmsis-svd-data sparse checkout.")
+    ENDIF()
+ENDIF()
 
 # Set the project name to your project name, my project isn't very descriptive
 PROJECT(TypeSafeRegister CXX)
@@ -94,12 +121,20 @@ IF(ENABLE_PCH)
             <utility>)
 ENDIF()
 
-IF(ENABLE_FMT)
-    ADD_COMPILE_DEFINITIONS(USE_FMT)
+SET(TYPESAFE_REGISTER_USE_FMT OFF)
+IF(ENABLE_OUTPUT)
+    ADD_COMPILE_DEFINITIONS(ENABLE_OUTPUT)
+    IF(CMAKE_CXX_STANDARD GREATER_EQUAL 20)
+        ADD_COMPILE_DEFINITIONS(TYPESAFE_REGISTER_USE_STD_FORMAT)
+    ELSE()
+        SET(TYPESAFE_REGISTER_USE_FMT ON)
+        FIND_PACKAGE(fmt REQUIRED)
+    ENDIF()
 ENDIF()
 
-FIND_PACKAGE(Python REQUIRED)
-FIND_PACKAGE(fmt REQUIRED)
+IF(CMAKE_CROSSCOMPILING)
+    ADD_COMPILE_DEFINITIONS(TYPESAFE_REGISTER_MMIO)
+ENDIF()
 
 ADD_SUBDIRECTORY(examples)
 
