@@ -1,26 +1,79 @@
-# Typesafe Register Usage
+# TypeSafeRegister
 
-This project is based on [Lefticus - cpp_starter_project](https://github.com/lefticus/cpp_starter_project)
+[![C/C++ CMake CI](https://github.com/StephanKa/TypeSafeRegister/actions/workflows/build_cmake.yml/badge.svg)](https://github.com/StephanKa/TypeSafeRegister/actions/workflows/build_cmake.yml)
+[![Deploy Documentation](https://github.com/StephanKa/TypeSafeRegister/actions/workflows/deploy-docs.yml/badge.svg)](https://github.com/StephanKa/TypeSafeRegister/actions/workflows/deploy-docs.yml)
 
-![example workflow](https://github.com/StephanKa/TypeSafeRegister/actions/workflows/build_cmake.yml/badge.svg)
+TypeSafeRegister generates type-safe C++ register interfaces from CMSIS-SVD peripheral descriptions. Generated register and field types preserve access modes, bit ranges, enumerations, reset values, and SVD-defined read/write side effects. Host builds use reset-value-backed simulation for tests; cross-compiled builds use volatile memory-mapped I/O.
+
+The project targets C++23 and uses concepts, templates, and compile-time metadata to make invalid register operations fail at compile time while preserving zero-overhead hardware access.
+
+Originally based on [Lefticus' cpp_starter_project](https://github.com/lefticus/cpp_starter_project).
+
+## Documentation
+
+The full guide, generated API reference, build instructions, and repository architecture diagrams are published on [GitHub Pages](https://stephanka.github.io/TypeSafeRegister/). The Sphinx source is in [`docs/`](docs/), and the Pages workflow is in [`.github/workflows/deploy-docs.yml`](.github/workflows/deploy-docs.yml).
 
 ## Prerequisites
 
-- Install [cmsis_svd](https://github.com/posborne/cmsis-svd/tree/master/python) and Jinja with `python -m pip install cmsis-svd jinja2`.
-- Provide a local [cmsis-svd-data](https://github.com/cmsis-svd/cmsis-svd-data) checkout through `CMSIS_SVD_DATA_DIR`, or configure CMake once with `-DFETCH_CMSIS_SVD_DATA=ON`. CMake does not install Python packages or download SVD data unless explicitly requested.
-- Linux CMake presets support GCC 14-16 and Clang 20-22. For example, configure a Clang 22 debug build with `cmake --preset clang-22-debug`, then build and test with `cmake --build --preset clang-22-debug` and `ctest --preset clang-22-debug`.
+- CMake 3.23 or newer, Conan 2, Git, and a compiler supported by the selected CMake preset.
+- Python packages for SVD generation:
 
+  ```powershell
+  python -m pip install cmsis-svd jinja2 conan
+  ```
 
-## General
+- CMSIS SVD data. Set `CMSIS_SVD_DATA_DIR` to a checkout containing `data/`, or allow CMake to retrieve it with `-DFETCH_CMSIS_SVD_DATA=ON`.
 
-This project will generate typesafe Register access which will be generated through a jinja template and generates header for each peripheral defined in the **_.svd_** files. 
-It also allows the compile time check what access rights it has. 
+## Quick Start
 
-### Setup 
-Setup CMake variable for chip family including the file extension **_.svd_** that you will use.
-For a list of files have a look at the data folder at [cmsis_svd data](https://github.com/posborne/cmsis-svd/tree/master/data)
+On Linux, use one of the GCC 14-16 or Clang 20-22 presets. For example:
 
-### Usage
+```bash
+cmake --preset clang-22-debug
+cmake --build --preset clang-22-debug
+ctest --preset clang-22-debug --output-on-failure
+```
+
+On Windows with MSYS2 MinGW:
+
+```powershell
+cmake --preset win32-gcc-x64-mingw-debug
+cmake --build --preset win32-gcc-x64-mingw-debug
+ctest --preset win32-gcc-x64-mingw-debug --output-on-failure
+```
+
+Use `windows-2019-*` or `windows-2022-*` presets for Visual Studio builds. See [`build.md`](build.md) for all supported presets, static analysis, formatting, and cross-compilation commands.
+
+## How It Works
+
+1. CMake selects an SVD vendor through `CHIP_MANUFACTURER` and an SVD file through `CHIP_FAMILY`.
+2. The configured Python generator parses that CMSIS-SVD file and renders one header per peripheral from the Jinja template.
+3. Examples and Catch2 tests compile those generated headers together with the reusable runtime headers in [`include/`](include/).
+4. The generated types encode register access permissions and field metadata in their types, constraining invalid operations at compile time.
+
+For a different device, pass its vendor and SVD filename during configuration:
+
+```bash
+cmake --preset clang-22-debug \
+  -DCHIP_MANUFACTURER=STMicro \
+  -DCHIP_FAMILY=STM32F20x.svd
+```
+
+Generated peripheral headers are build artifacts under `<build-directory>/generated/`; change the generator or templates, not generated files.
+
+## Build Documentation
+
+Install the Sphinx dependencies, configure the documentation target, and build it:
+
+```bash
+python -m pip install -r docs/requirements.txt
+cmake --preset clang-22-debug -DENABLE_SPHINX=ON -DFETCH_CMSIS_SVD_DATA=ON
+cmake --build build/debug/clang-22-debug --target sphinx-docs
+```
+
+The generated site is at `build/debug/clang-22-debug/docs/html/index.html`. The GitHub Pages workflow rebuilds and deploys it after relevant changes are pushed to `master`.
+
+## Usage
 
 #### STMicro Example
 **STMicro**: main.cpp can be found in the example directory.
@@ -204,13 +257,19 @@ Register name:    SHORTS
 ## Features
 
 - C++23 default build with concepts, `std::expected`, and `std::format` output
+- Compile-time register access checks, field ownership checks, and SVD metadata
 - `ENABLE_OUTPUT` selects `std::format` for C++20+; only explicit pre-C++20 compatibility builds use `{fmt}`
 - `-DENABLE_AMALGAMATION=ON` generates `generated/include/TypeSafeRegister.hpp`, a single header containing all public runtime register types. Build the `TypeSafeRegisterAmalgamation` target to generate it. Device-specific SVD peripheral headers remain generated separately.
-- Typesafe access of registers
-- Register defines can't be mixed up, e.g one define for another register
-- Supports many chip families, see **cmsis-svd**
-- Code generation will create files for development machines and embedded devices, easier write of unit tests
-- Dump generated register values , see example output above
+- Type-safe access prevents fields from one register being used with another register
+- Support for CMSIS-SVD device families, including STMicro and Nordic examples
+- Host-side simulation and embedded MMIO generation from the same SVD input
+- Optional register-map dumps for development through `ENABLE_OUTPUT`
+
+## Development
+
+Run the matching CTest preset after behavior changes. For C++ changes, run `clang-format-check`; the `clang-22-debug-static-analysis` preset enables clang-tidy, cppcheck, and include-what-you-use when those tools are available.
+
+The project favors clear, const-correct, compile-time-first C++23 code. The [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines) are the default reference, adapted for header-only code and volatile MMIO. See [`agents.md`](agents.md) for repository rules.
 
 ## Size Comparison
 
