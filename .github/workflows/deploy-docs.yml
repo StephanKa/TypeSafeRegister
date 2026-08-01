@@ -1,0 +1,67 @@
+name: Deploy Documentation
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - '.github/workflows/deploy-docs.yml'
+      - 'CMakeLists.txt'
+      - 'cmake/Sphinx.cmake'
+      - 'cmake/Options.cmake'
+      - 'docs/**'
+      - 'include/**'
+      - 'templates/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install build and documentation dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes cmake doxygen ninja-build
+          python -m pip install --upgrade pip conan
+          python -m pip install cmsis-svd jinja2 -r docs/requirements.txt
+
+      - name: Configure documentation build
+        run: >-
+          cmake -S . -B build/docs -G Ninja
+          -DENABLE_SPHINX=ON
+          -DFETCH_CMSIS_SVD_DATA=ON
+
+      - name: Build documentation
+        run: cmake --build build/docs --target sphinx-docs
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/docs/docs/html
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
