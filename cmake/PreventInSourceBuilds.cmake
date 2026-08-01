@@ -6,13 +6,13 @@ FUNCTION(ASSUREOUTOFSOURCEBUILDS)
     GET_FILENAME_COMPONENT(bindir "${CMAKE_BINARY_DIR}" REALPATH)
 
     # disallow in-source builds
-    IF("${srcdir}" STREQUAL "${bindir}")
+    IF ("${srcdir}" STREQUAL "${bindir}")
         MESSAGE("######################################################")
         MESSAGE("Warning: in-source builds are disabled")
         MESSAGE("Please create a separate build directory and run cmake from there")
         MESSAGE("######################################################")
         MESSAGE(FATAL_ERROR "Quitting configuration")
-    ENDIF()
+    ENDIF ()
 ENDFUNCTION()
 
 ASSUREOUTOFSOURCEBUILDS()

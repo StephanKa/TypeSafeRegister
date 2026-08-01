@@ -1,9 +1,9 @@
 # Set a default build type if none was specified
-IF(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+IF (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     MESSAGE(STATUS "Setting build type to 'RelWithDebInfo' as none was specified.")
     SET(CMAKE_BUILD_TYPE
-        RelWithDebInfo
-        CACHE STRING "Choose the type of build." FORCE)
+            RelWithDebInfo
+            CACHE STRING "Choose the type of build." FORCE)
     # Set the possible values of build type for cmake-gui, ccmake
     SET_PROPERTY(
             CACHE CMAKE_BUILD_TYPE
@@ -12,36 +12,36 @@ IF(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
             "Release"
             "MinSizeRel"
             "RelWithDebInfo")
-ENDIF()
+ENDIF ()
 
 # Generate compile_commands.json to make it easier to work with clang based tools
 SET(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-IF(ENABLE_IPO)
+IF (ENABLE_IPO)
     INCLUDE(CheckIPOSupported)
     CHECK_IPO_SUPPORTED(
             RESULT
             result
             OUTPUT
             output)
-    IF(result)
+    IF (result)
         SET(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
-    ELSE()
+    ELSE ()
         MESSAGE(SEND_ERROR "IPO is not supported: ${output}")
-    ENDIF()
-ENDIF()
+    ENDIF ()
+ENDIF ()
 
-IF(CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
+IF (CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
     ADD_COMPILE_OPTIONS(-fcolor-diagnostics)
-ELSEIF(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+ELSEIF (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     ADD_COMPILE_OPTIONS(-fdiagnostics-color=always)
-ELSE()
+ELSE ()
     MESSAGE(STATUS "No colored compiler diagnostic set for '${CMAKE_CXX_COMPILER_ID}' compiler.")
-ENDIF()
+ENDIF ()
 
-IF(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+IF (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     SET(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-ELSE()
+ELSE ()
     SET(CMAKE_CXX_FLAGS_DEBUG "-g")
     SET(CMAKE_CXX_FLAGS_RELEASE "-O2")
-ENDIF()
+ENDIF ()
