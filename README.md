@@ -6,7 +6,8 @@ This project is based on [Lefticus - cpp_starter_project](https://github.com/lef
 
 ## Prerequisites
 
-- install [cmsis_svd](https://github.com/posborne/cmsis-svd/tree/master/python) with ``python3 -m pip install -U -e 'git+https://github.com/posborne/cmsis-svd.git#egg=cmsis-svd&subdirectory=python'``
+- Install [cmsis_svd](https://github.com/posborne/cmsis-svd/tree/master/python) and Jinja with `python -m pip install cmsis-svd jinja2`.
+- Provide a local [cmsis-svd-data](https://github.com/cmsis-svd/cmsis-svd-data) checkout through `CMSIS_SVD_DATA_DIR`, or configure CMake once with `-DFETCH_CMSIS_SVD_DATA=ON`. CMake does not install Python packages or download SVD data unless explicitly requested.
 
 
 ## General
@@ -26,15 +27,14 @@ For a list of files have a look at the data folder at [cmsis_svd data](https://g
 #include <CRC.hpp>
 #include <DCMI.hpp>
 #include <RNG.hpp>
-#include <fmt/format.h>
+#include <Output.h>
 
 int main()
 {
-    fmt::print("CRC::DR.read():{0}\n", CRC::DR.read<decltype(CRC::BitFields::DR)>());
-    fmt::print("RNG::SR.read():{0}\n", RNG::SR.read<decltype(RNG::BitFields::DRDY)>());
-    fmt::print("RNG::SR():{0}\n", RNG::SR());
-    DCMI::ICR |= DCMI::BitFields::ERR_ISC | DCMI::BitFields::FRAME_ISC;
-    //fmt::print("DCMI::ICR():{0}\n", DCMI::ICR()); // compile error because it can't be read
+    details::print("CRC::DR.read():{}\n", CRC::DR.read(CRC::DR_Fields::DR));
+    details::print("RNG::SR.read():{}\n", RNG::SR.read(RNG::SR_Fields::DRDY));
+    details::print("RNG::SR():{}\n", RNG::SR());
+    DCMI::ICR |= DCMI::ICR_Fields::ERR_ISC | DCMI::ICR_Fields::FRAME_ISC;
     // dump register map
     DCMI::CR.dump();
     return static_cast<int>(RNG::SR());
@@ -116,11 +116,11 @@ Register name:      CR
 **Nordic**: main.cpp can be found in the example directory.
 ````c++
 #include <TIMER0_S.hpp>
-#include <fmt/format.h>
+#include <Output.h>
 
 int main()
 {
-    fmt::print("TIMER0_S::BITMODE():{0}\n", TIMER0_S::BITMODE());
+    details::print("TIMER0_S::BITMODE():{}\n", TIMER0_S::BITMODE());
     // dump register map
     TIMER0_S::SHORTS.dump();
     return 0;
@@ -202,7 +202,8 @@ Register name:    SHORTS
 
 ## Features
 
-- C++20 features like concepts
+- C++23 default build with concepts, `std::expected`, and `std::format` output
+- `ENABLE_OUTPUT` selects `std::format` for C++20+; only explicit pre-C++20 compatibility builds use `{fmt}`
 - Typesafe access of registers
 - Register defines can't be mixed up, e.g one define for another register
 - Supports many chip families, see **cmsis-svd**

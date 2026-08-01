@@ -1,12 +1,10 @@
-FIND_PACKAGE(fmt REQUIRED)
-
 SET(PROJECT_NAME NordicExample)
 
-IF(NOT DEFINED ${CHIP_MANUFACTURER})
+IF(NOT DEFINED CHIP_MANUFACTURER)
     SET(CHIP_MANUFACTURER Nordic)
 ENDIF()
 
-IF(NOT DEFINED ${CHIP_FAMILY})
+IF(NOT DEFINED CHIP_FAMILY)
     SET(CHIP_FAMILY nrf9160.svd)
 ENDIF()
 
@@ -16,8 +14,11 @@ CONFIGURE_FILE(../../templates/generator/generateDefinition.py.in generateDefini
 ADD_EXECUTABLE(${PROJECT_NAME} main.cpp)
 TARGET_LINK_LIBRARIES(${PROJECT_NAME}
                       PRIVATE project_options
-                      project_warnings
-                      fmt::fmt-header-only)
+                      project_warnings)
+
+IF(TYPESAFE_REGISTER_USE_FMT)
+    TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE fmt::fmt-header-only)
+ENDIF()
 
 IF(CMAKE_CROSSCOMPILING)
     SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES SUFFIX ".elf")
@@ -39,5 +40,5 @@ ENDIF()
 
 TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated ../../include ${CMAKE_CURRENT_BINARY_DIR}/../../generated)
 ADD_CUSTOM_TARGET(${PROJECT_NAME}_Generation
-                  COMMAND python${Python_VERSION_MAJOR} ${CMAKE_CURRENT_BINARY_DIR}/generateDefinition.py)
+                  COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/generateDefinition.py)
 ADD_DEPENDENCIES(${PROJECT_NAME} ${PROJECT_NAME}_Generation)

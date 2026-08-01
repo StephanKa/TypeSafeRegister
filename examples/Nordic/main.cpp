@@ -1,13 +1,18 @@
 #include <include/version.hpp>
+#ifdef ENABLE_OUTPUT
+#include <Output.h>
+#endif
 #include <TIMER0_S.hpp>
-#include <fmt/format.h>
 
 int main()
 {
-    fmt::print("TIMER0_S::BITMODE():{0}\n", TIMER0_S::BITMODE());
+#ifdef ENABLE_OUTPUT
+    details::print("TIMER0_S::BITMODE():{}\n", TIMER0_S::BITMODE());
+#endif
     // dump register map
     TIMER0_S::SHORTS.dump();
-    fmt::print(R"(major: {}
+#ifdef ENABLE_OUTPUT
+    details::print(R"(major: {}
 minor: {}
 patch: {}
 Githash: {})",
@@ -15,5 +20,6 @@ Githash: {})",
       SoftwareVersion::Minor,
       SoftwareVersion::Patch,
       SoftwareVersion::GitHash);
+#endif
     return 0;
 }

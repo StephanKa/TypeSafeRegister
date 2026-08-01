@@ -1,4 +1,3 @@
-FIND_PACKAGE(fmt REQUIRED)
 FIND_PACKAGE(Catch2 REQUIRED)
 
 INCLUDE(CTest)
@@ -12,10 +11,14 @@ CONFIGURE_FILE(../templates/generator/generateDefinition.py.in generateDefinitio
 ADD_EXECUTABLE(${PROJECT_NAME} tests.cpp)
 TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated ../include)
 
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE project_warnings project_options Catch2::Catch2WithMain fmt::fmt-header-only)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE project_warnings project_options Catch2::Catch2WithMain)
+
+IF(TYPESAFE_REGISTER_USE_FMT)
+        TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE fmt::fmt-header-only)
+ENDIF()
 
 ADD_CUSTOM_TARGET(${PROJECT_NAME}_Generation
-                  COMMAND python${Python_VERSION_MAJOR} ${CMAKE_CURRENT_BINARY_DIR}/generateDefinition.py)
+                  COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/generateDefinition.py)
 ADD_DEPENDENCIES(${PROJECT_NAME} ${PROJECT_NAME}_Generation)
 
 # automatically discover tests that are defined in catch based test files you can modify the unittests. Set TEST_PREFIX

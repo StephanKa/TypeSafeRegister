@@ -1,21 +1,25 @@
 #include <include/version.hpp>
 #include <CRC.hpp>
 #include <DCMI.hpp>
+#ifdef ENABLE_OUTPUT
+#include <Output.h>
+#endif
 #include <RNG.hpp>
-#include <fmt/format.h>
 
 
 int main()
 {
-    fmt::print("CRC::DR.read():{0}\n", CRC::DR.read(CRC::BitFields::DR));
-    fmt::print("RNG::SR.read():{0}\n", RNG::SR.read(RNG::BitFields::DRDY));
-    fmt::print("RNG::SR():{0}\n", RNG::SR());
-    DCMI::ICR |= DCMI::BitFields::ERR_ISC | DCMI::BitFields::FRAME_ISC;
-    // fmt::print("DCMI::ICR():{0}\n", DCMI::ICR()); // compile error because it can't be read
+#ifdef ENABLE_OUTPUT
+    details::print("CRC::DR.read():{}\n", CRC::DR.read(CRC::DR_Fields::DR));
+    details::print("RNG::SR.read():{}\n", RNG::SR.read(RNG::SR_Fields::DRDY));
+    details::print("RNG::SR():{}\n", RNG::SR());
+#endif
+    DCMI::ICR |= DCMI::ICR_Fields::ERR_ISC | DCMI::ICR_Fields::FRAME_ISC;
     //  dump register map
     DCMI::CR.dump();
     DCMI::ICR.dump();
-    fmt::print(R"(major: {}
+#ifdef ENABLE_OUTPUT
+    details::print(R"(major: {}
 minor: {}
 patch: {}
 Githash: {})",
@@ -23,5 +27,6 @@ Githash: {})",
       SoftwareVersion::Minor,
       SoftwareVersion::Patch,
       SoftwareVersion::GitHash);
+#endif
     return static_cast<int>(RNG::SR());
 }
