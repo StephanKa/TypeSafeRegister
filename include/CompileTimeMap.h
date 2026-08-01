@@ -27,7 +27,7 @@ class CompileTimeMapImpl {
    public:
     template <typename... Args>
     consteval explicit CompileTimeMapImpl(Args... elements)
-        : data{{std::move(elements)...}} {}
+        : data{std::move(elements)...} {}
 
     [[nodiscard]] consteval bool allAreUnique() const {
         for(auto iter = data.begin(); iter < data.end(); iter++)
