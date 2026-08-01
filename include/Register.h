@@ -254,7 +254,11 @@ class Register
     [[nodiscard]] RegisterWidth readAndClear([[maybe_unused]] Field field) const
     {
         static_assert((std::is_same_v<std::remove_cvref_t<Field>, std::remove_cvref_t<Fields>> || ...), "Bitfield not defined for register");
-        return (value() & Field::mask) >> Field::bitOffset;
+        const auto registerValue = value();
+    #ifndef TYPESAFE_REGISTER_MMIO
+        rawPtr = static_cast<RegisterWidth>(registerValue & ~Field::mask);
+    #endif
+        return (registerValue & Field::mask) >> Field::bitOffset;
     }
 
     /** @brief Restore the SVD reset value in host simulation builds. */
@@ -321,6 +325,6 @@ class Register
 
     static constexpr char const *name = Name;
 #ifndef TYPESAFE_REGISTER_MMIO
-    RegisterWidth rawPtr{ ResetValue };
+    mutable RegisterWidth rawPtr{ ResetValue };
 #endif
 };
