@@ -103,7 +103,7 @@ jobs:
 
     - name: Configure via CMake
       shell: bash
-      run: cmake --preset ${{ matrix.compiler.preset }}-${{ matrix.buildtype }}
+      run: cmake --preset ${{ matrix.compiler.preset }}-${{ matrix.buildtype }} -DFETCH_CMSIS_SVD_DATA=ON
 
     - name: Build
       shell: bash
@@ -135,7 +135,7 @@ jobs:
 
       - name: Configure CMake
         shell: bash
-        run: cmake --preset ${{ matrix.os }}-${{ matrix.buildtype }}
+        run: cmake --preset ${{ matrix.os }}-${{ matrix.buildtype }} -DFETCH_CMSIS_SVD_DATA=ON
 
       - name: Build
         shell: bash
@@ -198,7 +198,7 @@ jobs:
 
     - name: Configure via CMake
       shell: bash
-      run: cmake --preset ${{ matrix.compiler.preset }}-${{ matrix.buildtype }}-static-analysis -DCXX_STANDARD=17
+      run: cmake --preset ${{ matrix.compiler.preset }}-${{ matrix.buildtype }}-static-analysis -DCXX_STANDARD=17 -DFETCH_CMSIS_SVD_DATA=ON
 
     - name: Build
       shell: bash
@@ -249,7 +249,7 @@ jobs:
 
     - name: Configure via CMake
       shell: bash
-      run: cmake --preset gcc-arm-${{ matrix.buildtype }}
+      run: cmake --preset gcc-arm-${{ matrix.buildtype }} -DFETCH_CMSIS_SVD_DATA=ON
 
     - name: Build
       shell: bash
