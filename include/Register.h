@@ -15,11 +15,27 @@
 #include <string_view>
 
 
-// dummy for non embedded access
+/**
+ * @brief Type-safe view of an SVD register.
+ *
+ * Host builds store a simulated register value initialized from @p ResetValue.
+ * Builds with `TYPESAFE_REGISTER_MMIO` access the volatile hardware address.
+ * @tparam RegisterWidth Unsigned storage type of the register.
+ * @tparam BaseAddress Memory-mapped address of the hardware register.
+ * @tparam ResetValue SVD reset value used by host simulation.
+ * @tparam RegisterType SVD access permission type.
+ * @tparam Name Generated register name.
+ * @tparam Fields Generated field descriptor types owned by this register.
+ */
 template<typename RegisterWidth, std::uintptr_t BaseAddress, RegisterWidth ResetValue, typename RegisterType, details::FixedString Name, typename... Fields>
 class Register
 {
   public:
+    /**
+     * @brief Replace the complete register value.
+     * @param bitMask New register value.
+     * @return Reference to this register.
+     */
     Register &operator=(RegisterWidth bitMask)
         requires details::WriteConcept<RegisterType>
     {
@@ -27,6 +43,12 @@ class Register
         return *this;
     }
 
+    /**
+     * @brief Read the register with an additional mask applied.
+     * @tparam T Access type used to constrain reading.
+     * @param mask Bits to retain from the register value.
+     * @return Masked register value.
+     */
     template<typename T = RegisterType>
         requires details::ReadConcept<T>
     RegisterWidth operator()(const RegisterWidth mask) const
@@ -34,6 +56,11 @@ class Register
         return value() & mask;
     }
 
+    /**
+     * @brief Read one field as an unshifted value when it has no read side effect.
+     * @param value Generated field descriptor.
+     * @return Unshifted field value.
+     */
     [[nodiscard]] RegisterWidth read([[maybe_unused]] auto value) const
         requires details::ReadConcept<RegisterType> && (decltype(value)::readAction == details::ReadAction::None)
     {
@@ -42,18 +69,31 @@ class Register
         return (this->value() & BitFieldType::mask) >> BitFieldType::bitOffset;
     }
 
+    /**
+     * @brief Read the complete register value.
+     * @return Current register value.
+     */
     [[nodiscard]] RegisterWidth operator()() const
         requires details::ReadConcept<RegisterType>
     {
         return value();
     }
 
+    /**
+     * @brief Set all bits selected by @p bitMask.
+     * @param bitMask Bits to set.
+     */
     void operator|=(RegisterWidth bitMask)
         requires details::WriteConcept<RegisterType>
     {
         assign(static_cast<RegisterWidth>(value() | bitMask));
     }
 
+    /**
+     * @brief Set a single-bit field.
+     * @tparam Field Field descriptor type.
+     * @param field Field to set.
+     */
     template<typename Field>
         requires details::WriteConcept<RegisterType> && details::WriteConcept<decltype(Field::Type)>
     void operator|=([[maybe_unused]] Field field)
@@ -63,12 +103,21 @@ class Register
         assign(static_cast<RegisterWidth>(value() | Field::mask));
     }
 
+    /**
+     * @brief Clear bits selected by @p bitMask.
+     * @param bitMask Bits retained by the AND operation.
+     */
     void operator&=(RegisterWidth bitMask)
         requires details::WriteConcept<RegisterType>
     {
         assign(static_cast<RegisterWidth>(value() & bitMask));
     }
 
+    /**
+     * @brief Apply an AND operation using a single-bit field mask.
+     * @tparam Field Field descriptor type.
+     * @param field Field mask.
+     */
     template<typename Field>
         requires details::WriteConcept<RegisterType> && details::WriteConcept<decltype(Field::Type)>
     void operator&=([[maybe_unused]] Field field)
@@ -78,12 +127,21 @@ class Register
         assign(static_cast<RegisterWidth>(value() & Field::mask));
     }
 
+    /**
+     * @brief Toggle bits selected by @p bitMask.
+     * @param bitMask Bits to toggle.
+     */
     void operator^=(RegisterWidth bitMask)
         requires details::WriteConcept<RegisterType>
     {
         assign(static_cast<RegisterWidth>(value() ^ bitMask));
     }
 
+    /**
+     * @brief Toggle a single-bit field.
+     * @tparam Field Field descriptor type.
+     * @param field Field to toggle.
+     */
     template<typename Field>
         requires details::WriteConcept<RegisterType> && details::WriteConcept<decltype(Field::Type)>
     void operator^=([[maybe_unused]] Field field)
@@ -93,6 +151,14 @@ class Register
         assign(static_cast<RegisterWidth>(value() ^ Field::mask));
     }
 
+    /**
+     * @brief Apply a selected assignment operation to a multi-bit field.
+     * @tparam Field Field descriptor type.
+     * @tparam Operator Assignment operation tag.
+     * @param field Field to update.
+     * @param value Unshifted field value.
+     * @param operation Selects OR, AND, or XOR assignment.
+     */
     template<typename Field, typename Operator = OrAssign>
         requires details::WriteConcept<RegisterType> && details::WriteConcept<decltype(Field::Type)>
     void write(Field field, RegisterWidth value, [[maybe_unused]] Operator operation)
@@ -108,6 +174,12 @@ class Register
         }
     }
 
+    /**
+     * @brief Replace a multi-bit field without modifying neighboring bits.
+     * @tparam Field Field descriptor type.
+     * @param field Field to replace.
+     * @param fieldValue Unshifted replacement value.
+     */
     template<typename Field>
         requires details::WriteConcept<RegisterType> && details::WriteConcept<decltype(Field::Type)>
     void replace([[maybe_unused]] Field field, const RegisterWidth fieldValue)
@@ -117,6 +189,12 @@ class Register
         assign(static_cast<RegisterWidth>((value() & ~Field::mask) | encodedValue));
     }
 
+    /**
+     * @brief Replace an enumerated field with a generated enum value.
+     * @tparam Field Enumerated field descriptor type.
+     * @param field Field to replace.
+     * @param fieldValue Generated enum value.
+     */
     template<typename Field>
         requires details::WriteConcept<RegisterType> && details::WriteConcept<decltype(Field::Type)>
               && requires { typename Field::EnumType; }
@@ -126,6 +204,11 @@ class Register
         assign(static_cast<RegisterWidth>((value() & ~Field::mask) | Field::encode(fieldValue)));
     }
 
+    /**
+     * @brief Issue a write-one-to-clear command for an SVD field.
+     * @tparam Field Field descriptor type.
+     * @param field Field to clear.
+     */
     template<typename Field>
         requires details::WriteConcept<RegisterType> && details::WriteConcept<decltype(Field::Type)>
               && (Field::modifiedWriteValue == details::ModifiedWriteValue::OneToClear)
@@ -134,6 +217,11 @@ class Register
         assign(static_cast<RegisterWidth>(Field::mask));
     }
 
+    /**
+     * @brief Issue a write-one-to-set command for an SVD field.
+     * @tparam Field Field descriptor type.
+     * @param field Field to set.
+     */
     template<typename Field>
         requires details::WriteConcept<RegisterType> && details::WriteConcept<decltype(Field::Type)>
               && (Field::modifiedWriteValue == details::ModifiedWriteValue::OneToSet)
@@ -142,6 +230,11 @@ class Register
         assign(static_cast<RegisterWidth>(Field::mask));
     }
 
+    /**
+     * @brief Issue a write-one-to-toggle command for an SVD field.
+     * @tparam Field Field descriptor type.
+     * @param field Field to toggle.
+     */
     template<typename Field>
         requires details::WriteConcept<RegisterType> && details::WriteConcept<decltype(Field::Type)>
               && (Field::modifiedWriteValue == details::ModifiedWriteValue::OneToToggle)
@@ -150,6 +243,12 @@ class Register
         assign(static_cast<RegisterWidth>(Field::mask));
     }
 
+    /**
+     * @brief Read a field whose SVD readAction clears it.
+     * @tparam Field Field descriptor type.
+     * @param field Field to read.
+     * @return Unshifted field value before the SVD side effect.
+     */
     template<typename Field>
         requires details::ReadConcept<RegisterType> && (Field::readAction == details::ReadAction::Clear)
     [[nodiscard]] RegisterWidth readAndClear([[maybe_unused]] Field field) const
@@ -158,6 +257,7 @@ class Register
         return (value() & Field::mask) >> Field::bitOffset;
     }
 
+    /** @brief Restore the SVD reset value in host simulation builds. */
     void reset()
     {
 #ifndef TYPESAFE_REGISTER_MMIO
@@ -165,6 +265,7 @@ class Register
 #endif
     }
 
+    /** @brief Print a register field map when `ENABLE_OUTPUT` is enabled. */
     void dump()
     {
 #ifdef ENABLE_OUTPUT

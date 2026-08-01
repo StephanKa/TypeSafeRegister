@@ -9,6 +9,7 @@
 
 namespace {{ peripheral.identifier }}
 {
+    /** @brief Base address declared for this peripheral by the SVD. */
     inline constexpr std::uintptr_t base_address = 0x{{ "%x" | format(peripheral.base_address) }}U;
 
 {% for register in peripheral.registers %}
@@ -38,6 +39,7 @@ namespace {{ peripheral.identifier }}
 {% endfor %}
     }// namespace {{ register.identifier }}_Fields
 
+    /** @brief {{ register.description }} */
     inline Register<{{ register.width_type }}, base_address + 0x{{ "%x" | format(register.offset) }}U, 0x{{ "%x" | format(register.reset_value) }}U, {{ register.access }}, "{{ register.identifier }}"
 {% for field in register.fields %}
         , decltype({{ register.identifier }}_Fields::{{ field.identifier }})
@@ -75,12 +77,14 @@ namespace {{ peripheral.identifier }}
 {% endfor %}> {{ array.identifier }}{};
 {% endfor %}
 
+    /** @brief Metadata for registers declared by this peripheral. */
     inline constexpr std::array<details::RegisterInfo, {{ peripheral.registers | length }}> register_info{
 {% for register in peripheral.registers %}
         details::RegisterInfo{ "{{ register.name }}", {{ register.description | cpp_string }}, base_address + 0x{{ "%x" | format(register.offset) }}U, 0x{{ "%x" | format(register.reset_value) }}U, {{ register.width }}, {{ register.metadata_access }}, {{ register.modified_write_value }}, {{ register.read_action }} },
 {% endfor %}
     };
 
+    /** @brief Address ranges declared by the SVD. */
     inline constexpr std::array<details::AddressBlockInfo, {{ peripheral.address_blocks | length }}> address_blocks{
 {% for address_block in peripheral.address_blocks %}
         details::AddressBlockInfo{ base_address + 0x{{ "%x" | format(address_block.offset) }}U, 0x{{ "%x" | format(address_block.size) }}U, {{ address_block.usage | cpp_string }} },
@@ -88,6 +92,7 @@ namespace {{ peripheral.identifier }}
     };
 
 {% if peripheral.interrupts %}
+    /** @brief Interrupt numbers associated with this peripheral. */
     enum class Interrupt : std::int32_t
     {
 {% for interrupt in peripheral.interrupts %}
@@ -95,12 +100,14 @@ namespace {{ peripheral.identifier }}
 {% endfor %}
     };
 {% endif %}
+    /** @brief Metadata for interrupts associated with this peripheral. */
     inline constexpr std::array<details::InterruptInfo, {{ peripheral.interrupts | length }}> interrupt_info{
 {% for interrupt in peripheral.interrupts %}
         details::InterruptInfo{ "{{ interrupt.name }}", {{ interrupt.description | cpp_string }}, {{ interrupt.value }} },
 {% endfor %}
     };
 
+    /** @brief Metadata declared for this peripheral by the SVD. */
     inline constexpr details::PeripheralInfo info{
         "{{ peripheral.name }}", {{ peripheral.description | cpp_string }}, {{ peripheral.group_name | cpp_string }}, base_address, register_info.size()
     };

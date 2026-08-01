@@ -6,6 +6,7 @@
 
 namespace details {
 
+/** @brief Access permission declared by an SVD register or field. */
 enum class Access
 {
     ReadOnly,
@@ -13,6 +14,7 @@ enum class Access
     ReadWrite,
 };
 
+/** @brief Write side effect declared by an SVD modifiedWriteValues element. */
 enum class ModifiedWriteValue
 {
     None,
@@ -27,6 +29,7 @@ enum class ModifiedWriteValue
     ZeroToToggle,
 };
 
+/** @brief Read side effect declared by an SVD readAction element. */
 enum class ReadAction
 {
     None,
@@ -35,6 +38,7 @@ enum class ReadAction
     Modify,
 };
 
+/** @brief Compile-time metadata for one generated register. */
 struct RegisterInfo
 {
     std::string_view name;
@@ -47,6 +51,7 @@ struct RegisterInfo
     ReadAction readAction;
 };
 
+/** @brief Address range declared by an SVD addressBlock element. */
 struct AddressBlockInfo
 {
     std::uintptr_t address;
@@ -54,6 +59,7 @@ struct AddressBlockInfo
     std::string_view usage;
 };
 
+/** @brief Interrupt metadata declared by an SVD peripheral. */
 struct InterruptInfo
 {
     std::string_view name;
@@ -61,6 +67,7 @@ struct InterruptInfo
     std::int32_t value;
 };
 
+/** @brief Compile-time metadata for one generated peripheral. */
 struct PeripheralInfo
 {
     std::string_view name;
