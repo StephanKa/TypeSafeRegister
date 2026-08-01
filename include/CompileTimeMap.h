@@ -1,7 +1,7 @@
 #pragma once
 #include <algorithm>
 #include <array>
-#include <optional>
+#include <expected>
 
 template <typename Key, typename Value>
 struct Element {
@@ -16,6 +16,11 @@ consteval bool operator==(const Element<Key, Value>& lhs,
 }
 
 namespace details {
+
+enum class CompileTimeMapError
+{
+    KeyNotFound,
+};
 
 template <typename Key, typename Value, size_t Size>
 class CompileTimeMapImpl {
@@ -40,12 +45,12 @@ class CompileTimeMapImpl {
                    return elt.key == key;
                }) != data.end();
     }
-    consteval std::optional<Value> getValue(const Key& key) const {
+    consteval std::expected<Value, CompileTimeMapError> getValue(const Key& key) const {
         auto it = std::find_if(data.begin(), data.end(), [&key](const auto& elt) { return elt.key == key; });
         if (it != data.end()) {
             return it->value;
         }
-        return std::nullopt;
+        return std::unexpected(CompileTimeMapError::KeyNotFound);
     }
 
     consteval auto getSize() const { return Size; }
@@ -59,7 +64,7 @@ class CompileTimeMapImpl {
     }
 
     consteval auto getValues() const {
-        std::array<Key, Size> temp;
+        std::array<Value, Size> temp;
         std::transform(data.begin(), data.end(), temp.begin(), [](const auto& val){
             return val.value;
         });
