@@ -9,6 +9,11 @@
 
 namespace {{ peripheral.identifier }}
 {
+    /** @brief Distinguishes field descriptors owned by this peripheral. */
+    struct PeripheralTag
+    {
+    };
+
     /** @brief Base address declared for this peripheral by the SVD. */
     inline constexpr std::uintptr_t base_address = 0x{{ "%x" | format(peripheral.base_address) }}U;
 
@@ -33,7 +38,7 @@ namespace {{ peripheral.identifier }}
 {% if field.enum_values %}
         inline constexpr auto {{ field.identifier }} = EnumeratedField<Enums::{{ field.identifier }}, {{ field.offset }}, {{ field.width }}, "{{ field.identifier }}", {{ field.access }}, {{ field.register_width_type }}, {{ field.modified_write_value }}, {{ field.read_action }}>{};
 {% else %}
-        inline constexpr auto {{ field.identifier }} = BitField<{{ peripheral.identifier }}, {{ field.offset }}, {{ field.width }}, "{{ field.identifier }}", {{ field.access }}, {{ field.register_width_type }}, {{ field.modified_write_value }}, {{ field.read_action }}>{};
+    inline constexpr auto {{ field.identifier }} = BitField<PeripheralTag, {{ field.offset }}, {{ field.width }}, "{{ field.identifier }}", {{ field.access }}, {{ field.register_width_type }}, {{ field.modified_write_value }}, {{ field.read_action }}>{};
 {% endif %}
         static_assert({{ field.identifier }}.mask == details::getMask<{{ field.register_width_type }}>({{ field.offset }}, {{ field.width }}));
 {% endfor %}
@@ -66,7 +71,7 @@ namespace {{ peripheral.identifier }}
 {% if field.enum_values %}
     inline constexpr auto {{ field.identifier }} = EnumeratedField<Enums::{{ field.identifier }}, {{ field.offset }}, {{ field.width }}, "{{ field.identifier }}", {{ field.access }}, {{ field.register_width_type }}, {{ field.modified_write_value }}, {{ field.read_action }}>{};
 {% else %}
-        inline constexpr auto {{ field.identifier }} = BitField<{{ peripheral.identifier }}, {{ field.offset }}, {{ field.width }}, "{{ field.identifier }}", {{ field.access }}, {{ field.register_width_type }}, {{ field.modified_write_value }}, {{ field.read_action }}>{};
+    inline constexpr auto {{ field.identifier }} = BitField<PeripheralTag, {{ field.offset }}, {{ field.width }}, "{{ field.identifier }}", {{ field.access }}, {{ field.register_width_type }}, {{ field.modified_write_value }}, {{ field.read_action }}>{};
 {% endif %}
 {% endfor %}
     }// namespace {{ array.identifier }}_Fields
