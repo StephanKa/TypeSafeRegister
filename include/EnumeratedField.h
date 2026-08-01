@@ -1,7 +1,8 @@
 #pragma once
+#include <SvdTypes.h>
 #include <cstdint>
 #include <details.h>
-#include <SvdTypes.h>
+#include <utility>
 
 /**
  * @brief Describes an SVD field whose values are represented by an enum.
@@ -15,9 +16,16 @@
  * @tparam ModifiedWrite SVD modified-write policy.
  * @tparam Read SVD read-side-effect policy.
  */
-template<typename Enum, size_t BitOffset, size_t BitWidth, details::FixedString Name, typename FieldType = READWRITE, typename RegisterWidth = std::uint32_t,
-         details::ModifiedWriteValue ModifiedWrite = details::ModifiedWriteValue::None, details::ReadAction Read = details::ReadAction::None>
-struct EnumeratedField {
+template<typename Enum,
+  size_t BitOffset,
+  size_t BitWidth,
+  details::FixedString Name,
+  typename FieldType = READWRITE,
+  typename RegisterWidth = std::uint32_t,
+  details::ModifiedWriteValue ModifiedWrite = details::ModifiedWriteValue::None,
+  details::ReadAction Read = details::ReadAction::None>
+struct EnumeratedField
+{
     static constexpr auto bitOffset = BitOffset;
     static constexpr auto bitWidth = BitWidth;
     static constexpr auto mask = details::getMask<RegisterWidth>(BitOffset, BitWidth);

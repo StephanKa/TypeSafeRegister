@@ -1,13 +1,13 @@
 #pragma once
-#include <CompileTimeMap.h>
 #include <BitType.h>
-#include <map>
-#include <type_traits>
-#include <typeindex>
+#include <CompileTimeMap.h>
 #include <array>
 #include <limits>
+#include <map>
 #include <stdexcept>
 #include <string_view>
+#include <type_traits>
+#include <typeindex>
 
 struct READONLY
 {
@@ -46,9 +46,7 @@ template<typename Type>
         return Type{ 0 };
     }
 
-    const auto unshiftedMask = bitWidth == digits
-      ? std::numeric_limits<Type>::max()
-      : static_cast<Type>((Type{ 1 } << bitWidth) - Type{ 1 });
+    const auto unshiftedMask = bitWidth == digits ? std::numeric_limits<Type>::max() : static_cast<Type>((Type{ 1 } << bitWidth) - Type{ 1 });
     return static_cast<Type>(unshiftedMask << bitOffset);
 }
 
@@ -63,7 +61,7 @@ struct FixedString
 
     [[nodiscard]] explicit constexpr operator std::string_view() const
     {
-        return {buf.data(), N};
+        return { buf.data(), N };
     }
 };
 
@@ -73,10 +71,9 @@ FixedString(const char (&)[N]) -> FixedString<N - 1>;
 #ifdef ENABLE_OUTPUT
 using namespace std::string_view_literals;
 
-constexpr auto TypeMap = CompileTimeMap<const std::type_info*, BitType>(
-    Element{.key=&typeid(READONLY), .value=BitType{ "R"sv }},
-    Element{.key=&typeid(WRITEONLY), .value=BitType{ "W"sv }},
-    Element{.key=&typeid(READWRITE), .value=BitType{ "R/W"sv }});
+constexpr auto TypeMap = CompileTimeMap<const std::type_info *, BitType>(Element{ .key = &typeid(READONLY), .value = BitType{ "R"sv } },
+  Element{ .key = &typeid(WRITEONLY), .value = BitType{ "W"sv } },
+  Element{ .key = &typeid(READWRITE), .value = BitType{ "R/W"sv } });
 #endif
 
 }// namespace details

@@ -7,7 +7,7 @@
 namespace details {
 
 /** @brief Access permission declared by an SVD register or field. */
-enum class Access
+enum class Access : std::uint8_t
 {
     ReadOnly,
     WriteOnly,
@@ -15,7 +15,7 @@ enum class Access
 };
 
 /** @brief Write side effect declared by an SVD modifiedWriteValues element. */
-enum class ModifiedWriteValue
+enum class ModifiedWriteValue : std::uint8_t
 {
     None,
     Clear,
@@ -30,7 +30,7 @@ enum class ModifiedWriteValue
 };
 
 /** @brief Read side effect declared by an SVD readAction element. */
-enum class ReadAction
+enum class ReadAction : std::uint8_t
 {
     None,
     Clear,

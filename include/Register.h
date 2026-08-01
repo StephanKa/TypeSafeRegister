@@ -1,17 +1,17 @@
 #pragma once
 #ifdef ENABLE_OUTPUT
 
-#include <array>
 #include <Output.h>
+#include <array>
 
 #endif
 #include <AssignmentOperations.h>
-#include <BitName.h>
 #include <BitInfo.h>
+#include <BitName.h>
+#include <SvdTypes.h>
 #include <cstdint>
 #include <details.h>
 #include <limits>
-#include <SvdTypes.h>
 #include <string_view>
 
 
@@ -196,8 +196,7 @@ class Register
      * @param fieldValue Generated enum value.
      */
     template<typename Field>
-        requires details::WriteConcept<RegisterType> && details::WriteConcept<decltype(Field::Type)>
-              && requires { typename Field::EnumType; }
+        requires details::WriteConcept<RegisterType> && details::WriteConcept<decltype(Field::Type)> && requires { typename Field::EnumType; }
     void set([[maybe_unused]] Field field, const typename Field::EnumType fieldValue)
     {
         static_assert((std::is_same_v<std::remove_cvref_t<Field>, std::remove_cvref_t<Fields>> || ...), "Bitfield not defined for register");
@@ -210,8 +209,7 @@ class Register
      * @param field Field to clear.
      */
     template<typename Field>
-        requires details::WriteConcept<RegisterType> && details::WriteConcept<decltype(Field::Type)>
-              && (Field::modifiedWriteValue == details::ModifiedWriteValue::OneToClear)
+        requires details::WriteConcept<RegisterType> && details::WriteConcept<decltype(Field::Type)> && (Field::modifiedWriteValue == details::ModifiedWriteValue::OneToClear)
     void clear([[maybe_unused]] Field field)
     {
         assign(static_cast<RegisterWidth>(Field::mask));
@@ -223,8 +221,7 @@ class Register
      * @param field Field to set.
      */
     template<typename Field>
-        requires details::WriteConcept<RegisterType> && details::WriteConcept<decltype(Field::Type)>
-              && (Field::modifiedWriteValue == details::ModifiedWriteValue::OneToSet)
+        requires details::WriteConcept<RegisterType> && details::WriteConcept<decltype(Field::Type)> && (Field::modifiedWriteValue == details::ModifiedWriteValue::OneToSet)
     void set([[maybe_unused]] Field field)
     {
         assign(static_cast<RegisterWidth>(Field::mask));
@@ -236,8 +233,7 @@ class Register
      * @param field Field to toggle.
      */
     template<typename Field>
-        requires details::WriteConcept<RegisterType> && details::WriteConcept<decltype(Field::Type)>
-              && (Field::modifiedWriteValue == details::ModifiedWriteValue::OneToToggle)
+        requires details::WriteConcept<RegisterType> && details::WriteConcept<decltype(Field::Type)> && (Field::modifiedWriteValue == details::ModifiedWriteValue::OneToToggle)
     void toggle([[maybe_unused]] Field field)
     {
         assign(static_cast<RegisterWidth>(Field::mask));
@@ -255,9 +251,9 @@ class Register
     {
         static_assert((std::is_same_v<std::remove_cvref_t<Field>, std::remove_cvref_t<Fields>> || ...), "Bitfield not defined for register");
         const auto registerValue = value();
-    #ifndef TYPESAFE_REGISTER_MMIO
+#ifndef TYPESAFE_REGISTER_MMIO
         rawPtr = static_cast<RegisterWidth>(registerValue & ~Field::mask);
-    #endif
+#endif
         return (registerValue & Field::mask) >> Field::bitOffset;
     }
 
@@ -265,7 +261,7 @@ class Register
     void reset()
     {
 #ifndef TYPESAFE_REGISTER_MMIO
-    rawPtr = ResetValue;
+        rawPtr = ResetValue;
 #endif
     }
 

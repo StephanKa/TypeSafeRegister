@@ -3,85 +3,87 @@
 #include <array>
 #include <expected>
 
-template <typename Key, typename Value>
-struct Element {
+template<typename Key, typename Value>
+struct Element
+{
     Key key;
     Value value;
 };
 
-template <typename Key, typename Value>
-consteval bool operator==(const Element<Key, Value>& lhs,
-                          const Element<Key, Value>& rhs) {
+template<typename Key, typename Value>
+consteval bool operator==(const Element<Key, Value> &lhs, const Element<Key, Value> &rhs)
+{
     return lhs.key == rhs.key;
 }
 
 namespace details {
 
-enum class CompileTimeMapError
+enum class CompileTimeMapError : std::uint8_t
 {
     KeyNotFound,
 };
 
-template <typename Key, typename Value, size_t Size>
-class CompileTimeMapImpl {
-   public:
-    template <typename... Args>
-    consteval explicit CompileTimeMapImpl(Args... elements)
-        : data{std::move(elements)...} {}
+template<typename Key, typename Value, size_t Size>
+class CompileTimeMapImpl
+{
+  public:
+    template<typename... Args>
+    consteval explicit CompileTimeMapImpl(Args... elements) : data{ std::move(elements)... }
+    {}
 
-    [[nodiscard]] consteval bool allAreUnique() const {
-        for(auto iter = data.begin(); iter < data.end(); iter++)
-        {
-            if(containsIter(iter + 1, iter->key))
-            {
+    [[nodiscard]] consteval bool allAreUnique() const
+    {
+        for (auto iter = data.begin(); iter < data.end(); ++iter) {
+            if (containsIter(iter + 1, iter->key)) {
                 return false;
             }
         }
 
         return true;
     }
-    consteval bool contains(const Key& key) const {
-        return std::find_if(data.begin(), data.end(), [&key](const auto& elt) {
-                   return elt.key == key;
-               }) != data.end();
+    consteval bool contains(const Key &key) const
+    {
+        return std::find_if(data.begin(), data.end(), [&key](const auto &elt) { return elt.key == key; }) != data.end();
     }
-    consteval std::expected<Value, CompileTimeMapError> getValue(const Key& key) const {
-        auto it = std::find_if(data.begin(), data.end(), [&key](const auto& elt) { return elt.key == key; });
-        if (it != data.end()) {
-            return it->value;
+    consteval std::expected<Value, CompileTimeMapError> getValue(const Key &key) const
+    {
+        auto iterator = std::ranges::find_if(data, [&key](const auto &elt) { return elt.key == key; });
+        if (iterator != data.end()) {
+            return iterator->value;
         }
         return std::unexpected(CompileTimeMapError::KeyNotFound);
     }
 
-    consteval auto getSize() const { return Size; }
+    consteval auto getSize() const
+    {
+        return Size;
+    }
 
-    consteval auto getKeys() const {
+    consteval auto getKeys() const
+    {
         std::array<Key, Size> temp;
-        std::transform(data.begin(), data.end(), temp.begin(), [](const auto& val){
-            return val.key;
-        });
+        std::transform(data.begin(), data.end(), temp.begin(), [](const auto &val) { return val.key; });
         return temp;
     }
 
-    consteval auto getValues() const {
+    consteval auto getValues() const
+    {
         std::array<Value, Size> temp;
-        std::transform(data.begin(), data.end(), temp.begin(), [](const auto& val){
-            return val.value;
-        });
+        std::transform(data.begin(), data.end(), temp.begin(), [](const auto &val) { return val.value; });
         return temp;
     }
 
-   private:
-    consteval bool containsIter(auto startIter, const Key& key) const {
-        return std::find_if(startIter, data.end(), [&key](const auto& elt) {
-                   return elt.key == key;
-               }) != data.end();
+  private:
+    consteval bool containsIter(auto startIter, const Key &key) const
+    {
+        return std::find_if(startIter, data.end(), [&key](const auto &elt) { return elt.key == key; }) != data.end();
     }
     std::array<Element<Key, Value>, Size> data{};
 };
-}  // namespace details
+}// namespace details
 
-template <typename Key, typename Value, typename... Args>
-consteval auto CompileTimeMap(Args... args) {
+template<typename Key, typename Value, typename... Args>
+consteval auto CompileTimeMap(Args... args)
+{
     return details::CompileTimeMapImpl<Key, Value, sizeof...(args)>(args...);
 }

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <cstddef>
 #include <Register.h>
+#include <cstddef>
 
 /**
  * @brief Represents an SVD register array with compile-time checked indices.
@@ -15,21 +15,27 @@
  * @tparam Name Generated register name.
  * @tparam Fields Generated field descriptor types.
  */
-template<typename RegisterWidth, std::uintptr_t BaseAddress, RegisterWidth ResetValue, typename RegisterType, details::FixedString Name,
-         std::size_t Count, std::uintptr_t Increment, typename... Fields>
+template<typename RegisterWidth,
+  std::uintptr_t BaseAddress,
+  RegisterWidth ResetValue,
+  typename RegisterType,
+  details::FixedString Name,
+  std::size_t Count,
+  std::uintptr_t Increment,
+  typename... Fields>
 class RegisterArray
 {
   public:
     template<std::size_t Index>
-        requires (Index < Count)
+        requires(Index < Count)
     /**
      * @brief Return the register at compile-time index @p Index.
      * @tparam Index Zero-based array index, constrained to `Index < Count`.
      * @return Reference to the selected register instance.
      */
-    [[nodiscard]] static Register<RegisterWidth, BaseAddress + Index * Increment, ResetValue, RegisterType, Name, Fields...> &at()
+    [[nodiscard]] static Register<RegisterWidth, BaseAddress + (Index * Increment), ResetValue, RegisterType, Name, Fields...> &at()
     {
-        static Register<RegisterWidth, BaseAddress + Index * Increment, ResetValue, RegisterType, Name, Fields...> instance;
+        static Register<RegisterWidth, BaseAddress + (Index * Increment), ResetValue, RegisterType, Name, Fields...> instance;
         return instance;
     }
 

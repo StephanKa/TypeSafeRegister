@@ -1,7 +1,7 @@
 #pragma once
+#include <SvdTypes.h>
 #include <cstdint>
 #include <details.h>
-#include <SvdTypes.h>
 
 /**
  * @brief Describes a non-enumerated SVD register field at compile time.
@@ -17,13 +17,19 @@
  * @tparam ModifiedWrite SVD modified-write policy.
  * @tparam Read SVD read-side-effect policy.
  */
-template<typename T, size_t BitOffset, size_t BitWidth, details::FixedString Name, typename FieldType = READWRITE, typename RegisterWidth = std::uint32_t,
-         details::ModifiedWriteValue ModifiedWrite = details::ModifiedWriteValue::None, details::ReadAction Read = details::ReadAction::None>
-struct BitField {
+template<typename T,
+  size_t BitOffset,
+  size_t BitWidth,
+  details::FixedString Name,
+  typename FieldType = READWRITE,
+  typename RegisterWidth = std::uint32_t,
+  details::ModifiedWriteValue ModifiedWrite = details::ModifiedWriteValue::None,
+  details::ReadAction Read = details::ReadAction::None>
+struct BitField
+{
     static_assert(std::is_unsigned_v<RegisterWidth>, "Register width must be an unsigned integral type");
-    static_assert(BitOffset <= std::numeric_limits<RegisterWidth>::digits
-                    && BitWidth <= std::numeric_limits<RegisterWidth>::digits - BitOffset,
-                  "Bit field exceeds register width");
+    static_assert(BitOffset <= std::numeric_limits<RegisterWidth>::digits && BitWidth <= std::numeric_limits<RegisterWidth>::digits - BitOffset,
+      "Bit field exceeds register width");
 
     /** @brief Least-significant bit of the field. */
     static constexpr auto bitOffset = BitOffset;
@@ -37,26 +43,28 @@ struct BitField {
     constexpr static FieldType Type{};
 
     template<typename U>
-    requires details::NotSameType<T, U>
+        requires details::NotSameType<T, U>
     /**
      * @brief Combine two compatible single-bit field masks.
      * @tparam U Type of the other field descriptor.
      * @param lhs Other field descriptor.
      * @return Combined register mask.
      */
-    consteval auto operator|(U lhs) const {
+    consteval auto operator|(U lhs) const
+    {
         return mask | lhs.mask;
     }
 
     template<typename U>
-    requires details::NotSameType<T, U>
+        requires details::NotSameType<T, U>
     /**
      * @brief Intersect two compatible field masks.
      * @tparam U Type of the other field descriptor.
      * @param lhs Other field descriptor.
      * @return Intersected register mask.
      */
-    consteval auto operator&(U lhs) const {
+    consteval auto operator&(U lhs) const
+    {
         return mask & lhs.mask;
     }
 };
