@@ -49,7 +49,8 @@ def normalize(value):
     return re.sub(r"[^a-z0-9]", "", str(value or "").lower())
 
 def clean_description(value):
-    return re.sub(r"\s+", " ", value or "").strip()
+    text = getattr(value, "value", value)
+    return re.sub(r"\s+", " ", str(text or "")).strip()
 
 def cpp_string(value):
     return '"{}"'.format(
