@@ -1,6 +1,7 @@
 #pragma once
 #include <algorithm>
 #include <array>
+#include <cstdint>
 #include <expected>
 
 template<typename Key, typename Value>
