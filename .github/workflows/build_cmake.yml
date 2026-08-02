@@ -198,7 +198,7 @@ jobs:
 
     - name: Configure via CMake
       shell: bash
-      run: cmake --preset ${{ matrix.compiler.preset }}-${{ matrix.buildtype }}-static-analysis -DCXX_STANDARD=17 -DFETCH_CMSIS_SVD_DATA=ON
+      run: cmake --preset ${{ matrix.compiler.preset }}-${{ matrix.buildtype }}-static-analysis -DCXX_STANDARD=23 -DFETCH_CMSIS_SVD_DATA=ON
 
     - name: Build
       shell: bash
