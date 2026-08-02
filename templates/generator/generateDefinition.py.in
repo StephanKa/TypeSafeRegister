@@ -2,7 +2,7 @@ import os
 import re
 
 from cmsis_svd.parser import SVDParser
-from cmsis_svd.model import SVDRegisterArray
+from cmsis_svd.model import SVDRegisterArray, SVDRegisterCluster, SVDRegisterClusterArray
 from jinja2 import Environment, FileSystemLoader
 
 ACCESS_TYPES = {
@@ -77,6 +77,10 @@ def modified_write_value(value):
 def read_action(value):
     return READ_ACTIONS.get(normalize(value), "details::ReadAction::None")
 
+def field_enumerated_values(field):
+    for values_or_value in field.enumerated_values or []:
+        yield from getattr(values_or_value, "enumerated_values", [values_or_value])
+
 def build_fields(fields, width):
     result = []
     used_identifiers = set()
@@ -84,7 +88,7 @@ def build_fields(fields, width):
         identifier = unique_identifier(field.name, used_identifiers)
         enum_values = []
         enum_identifiers = set()
-        for enum_value in field.enumerated_values or []:
+        for enum_value in field_enumerated_values(field):
             enum_values.append({
                 "identifier": unique_identifier(enum_value.name, enum_identifiers),
                 "value": integer(enum_value.value),
@@ -131,9 +135,19 @@ def build_array(register_array, used_identifiers):
     array["increment"] = integer(meta_register.dim_increment)
     return array
 
+def flatten_registers(entries):
+    for entry in entries:
+        if isinstance(entry, SVDRegisterCluster):
+            yield from flatten_registers(entry.registers)
+            yield from flatten_registers(entry.clusters)
+        elif isinstance(entry, SVDRegisterClusterArray):
+            yield from flatten_registers(entry.clusters)
+        else:
+            yield entry
+
 def build_peripheral(peripheral):
     register_identifiers = set()
-    peripheral_registers = peripheral.registers or []
+    peripheral_registers = list(flatten_registers(peripheral.registers or []))
     registers = [build_register(register, register_identifiers) for register in peripheral_registers if not isinstance(register, SVDRegisterArray)]
     arrays = [build_array(register_array, register_identifiers) for register_array in peripheral_registers if isinstance(register_array, SVDRegisterArray)]
     arrays.extend(build_array(register_array, register_identifiers) for register_array in getattr(peripheral, "register_arrays", []))
