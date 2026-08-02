@@ -2,6 +2,7 @@ import os
 import re
 
 from cmsis_svd.parser import SVDParser
+from cmsis_svd.model import SVDRegisterArray
 from jinja2 import Environment, FileSystemLoader
 
 ACCESS_TYPES = {
@@ -123,15 +124,18 @@ def build_register(register, used_identifiers):
     }
 
 def build_array(register_array, used_identifiers):
-    array = build_register(register_array, used_identifiers)
-    array["count"] = integer(register_array.dim)
-    array["increment"] = integer(register_array.dim_increment)
+    meta_register = getattr(register_array, "meta_register", register_array)
+    array = build_register(meta_register, used_identifiers)
+    array["count"] = integer(meta_register.dim)
+    array["increment"] = integer(meta_register.dim_increment)
     return array
 
 def build_peripheral(peripheral):
     register_identifiers = set()
-    registers = [build_register(register, register_identifiers) for register in peripheral.registers]
-    arrays = [build_array(register_array, register_identifiers) for register_array in peripheral.register_arrays]
+    peripheral_registers = peripheral.registers or []
+    registers = [build_register(register, register_identifiers) for register in peripheral_registers if not isinstance(register, SVDRegisterArray)]
+    arrays = [build_array(register_array, register_identifiers) for register_array in peripheral_registers if isinstance(register_array, SVDRegisterArray)]
+    arrays.extend(build_array(register_array, register_identifiers) for register_array in getattr(peripheral, "register_arrays", []))
     interrupts = []
     interrupt_identifiers = set()
     seen_interrupts = set()
