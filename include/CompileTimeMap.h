@@ -46,7 +46,7 @@ class CompileTimeMapImpl
     {
         return std::find_if(data.begin(), data.end(), [&key](const auto &elt) { return elt.key == key; }) != data.end();
     }
-    consteval std::expected<Value, CompileTimeMapError> getValue(const Key &key) const
+    constexpr std::expected<Value, CompileTimeMapError> getValue(const Key &key) const
     {
         auto iterator = std::ranges::find_if(data, [&key](const auto &elt) { return elt.key == key; });
         if (iterator != data.end()) {
