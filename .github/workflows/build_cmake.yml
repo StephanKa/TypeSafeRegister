@@ -24,10 +24,10 @@ jobs:
             image: cpp_dev_env:latest
             smoke: cmake --version && conan --version && clang-22 --version
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Build ${{ matrix.target }} image
         uses: docker/build-push-action@v6
@@ -59,10 +59,10 @@ jobs:
                     {name: 'Clang 22', preset: clang-22, version: '22'}
                   ]
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Cache
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       env:
         cache-name: cache-conan-modules
       with:
@@ -122,8 +122,8 @@ jobs:
         os: [windows-2022, windows-2019]
         buildtype: [debug]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.10'
       - name: Install conan
@@ -156,10 +156,10 @@ jobs:
         compiler: [{name: 'Clang 22', preset: clang-22, pkgs: 'clang-22 llvm-22 llvm-22-dev libclang-22-dev', iwyu_branch: 'clang_22', path_prefix: "/usr/lib/llvm-22"}]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Cache
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       env:
         cache-name: cache-conan-modules
       with:
@@ -214,10 +214,10 @@ jobs:
         buildtype: [debug, release]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Cache
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       env:
         cache-name: cache-conan-modules
       with:
