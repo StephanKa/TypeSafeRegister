@@ -12,7 +12,7 @@ struct BitName
      * @brief Construct a field name from a null-terminated character string.
      * @param data Field name supplied by the SVD.
      */
-    constexpr explicit BitName(const char *data) : name{ data, std::char_traits<char>::length(data) }
+    constexpr explicit BitName(std::string_view data) : name{ data }
     {}
 
     /** @brief Display name of the field. */

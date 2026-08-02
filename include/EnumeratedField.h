@@ -31,7 +31,7 @@ struct EnumeratedField
     static constexpr auto mask = details::getMask<RegisterWidth>(BitOffset, BitWidth);
     static constexpr auto modifiedWriteValue = ModifiedWrite;
     static constexpr auto readAction = Read;
-    static constexpr std::string_view name{Name()};
+    static constexpr std::string_view name{ static_cast<std::string_view>(Name) };
     constexpr static FieldType Type{};
     using EnumType = Enum;
 
