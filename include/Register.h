@@ -319,7 +319,7 @@ class Register
 #endif
     }
 
-    static constexpr char const *name = Name;
+    static constexpr std::string_view name{Name()};
 #ifndef TYPESAFE_REGISTER_MMIO
     mutable RegisterWidth rawPtr{ ResetValue };
 #endif
