@@ -19,7 +19,7 @@ class ProjectConan(ConanFile):
 
     def build_requirements(self):
         if can_run(self):
-            self.test_requires('catch2/3.9.1')
+            self.test_requires('catch2/3.15.2')
 
     def build(self):
         cmake = CMake(self)
